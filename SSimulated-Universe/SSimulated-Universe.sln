@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSimulated-Universe", "SSimulated-Universe.csproj", "{46A66253-0C3C-4D37-8A96-030D8DDA1C0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSimulated-Universe.Tests", "..\SSimulated-Universe.Tests\SSimulated-Universe.Tests.csproj", "{ADB9959F-6AFD-4259-9D14-9A7292E020A5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{46A66253-0C3C-4D37-8A96-030D8DDA1C0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46A66253-0C3C-4D37-8A96-030D8DDA1C0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46A66253-0C3C-4D37-8A96-030D8DDA1C0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46A66253-0C3C-4D37-8A96-030D8DDA1C0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADB9959F-6AFD-4259-9D14-9A7292E020A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADB9959F-6AFD-4259-9D14-9A7292E020A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADB9959F-6AFD-4259-9D14-9A7292E020A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADB9959F-6AFD-4259-9D14-9A7292E020A5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
