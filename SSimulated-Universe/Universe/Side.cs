@@ -21,8 +21,19 @@ public class Side
     public Entity EntityAt(int index) => _entities.ElementAt(index);
     public bool Contains(Entity entity) => _entities.Contains(entity);
 
-    public void Prepend(Entity entity) => _entities.Insert(0, entity);
-    public void Append(Entity entity) => _entities.Add(entity);
+    public void Prepend(Entity entity)
+    {
+        _entities.Insert(0, entity);
+        _notifier.Broadcast(o => o.EntityJoined(entity));
+    }
+
+    public void Append(Entity entity)
+    {
+        _entities.Add(entity);
+        _notifier.Broadcast(o => o.EntityJoined(entity));
+    }
+
+    public bool Remove(Entity entity) => _entities.Remove(entity);
 
     public Entity? FindLeft(Entity entity)
     {

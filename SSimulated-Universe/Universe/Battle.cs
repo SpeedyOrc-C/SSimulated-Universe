@@ -6,49 +6,57 @@ namespace SSimulated_Universe.Universe;
 
 public class Battle
 {
-    private readonly Sides _sides;
-    private readonly Notifier _notifier = new();
-    private readonly Scheduler<Entity> _scheduler = new();
+    public readonly Side Left;
+    public readonly Side Right;
+    
     private readonly HashSet<Effect> _effects = new();
+    
+    private readonly Notifier _notifier;
+    private readonly Scheduler<Entity> _scheduler = new();
+    
     private readonly Stack<Event> _followUps = new();
     private readonly Queue<Event> _ultimates = new();
     private readonly Queue<Entity> _extraTurns = new();
 
-    public Battle() => _sides = new Sides(_notifier);
-
-    public void LeftPrepend(Entity entity)
+    public Battle()
     {
-        _notifier.Add(entity);
-        _sides.LeftPrepend(entity);
+        _notifier = new Notifier(GetObservers);
+        Left = new Side(_notifier);
+        Right = new Side(_notifier);
     }
 
-    public void LeftAppend(Entity entity)
-    {
-        _notifier.Add(entity);
-        _sides.LeftAppend(entity);
-    }
+    public IEnumerable<Entity> Entities => Left.Entities.Concat(Right.Entities);
 
-    public void RightPrepend(Entity entity)
-    {
-        _notifier.Add(entity);
-        _sides.RightPrepend(entity);
-    }
-
-    public void RightAppend(Entity entity)
-    {
-        _notifier.Add(entity);
-        _sides.RightAppend(entity);
-    }
+    public IEnumerable<BattleObserver> GetObservers() => 
+        Entities.Select(x => x as BattleObserver)
+        .Concat(_effects.Select(x => x as BattleObserver));
 
     public void Add(Effect effect)
     {
-        _notifier.Add(effect);
         _effects.Add(effect);
+        Broadcast(o => o.EffectStarted(effect));
+    }
+
+    public void Remove(Entity entity)
+    {
+        if (Left.Remove(entity))
+        {
+            Broadcast(o => o.EntityLeft(entity));
+            return;
+        }
+
+        if (Right.Remove(entity))
+        {
+            Broadcast(o => o.EntityLeft(entity));
+            return;
+        }
+
+        throw new Exception("This entity doesn't exist.");
     }
 
     public void Remove(Effect effect)
     {
-        if (!_effects.Remove(effect) || !_notifier.Remove(effect))
+        if (!_effects.Remove(effect))
             throw new Exception("This effect doesn't exist.");
 
         effect.CleanUp();
@@ -56,15 +64,29 @@ public class Battle
     }
 
     public void Broadcast(Action<BattleObserver> notify) => _notifier.Broadcast(notify);
-    public Side SideOf(Entity entity) => _sides.SideOf(entity);
-    public Side OppositeSideOf(Entity entity) => _sides.OppositeSideOf(entity);
+    
+    public Side SideOf(Entity entity)
+    {
+        if (Left.Contains(entity)) return Left;
+        if (Right.Contains(entity)) return Right;
+        throw new Exception("Cannot find the entity.");
+    }
+
+    public Side OppositeSideOf(Entity entity)
+    {
+        if (Left.Contains(entity)) return Right;
+        if (Right.Contains(entity)) return Left;
+        throw new Exception("Cannot find the entity.");
+    }
 
     public void TriggerFollowUp(Event followUp) => _followUps.Push(followUp);
-    public void TriggerUltimate(Event ultimate) => _ultimates.Enqueue(ultimate);
+    public void UnleashUltimate(Event ultimate) => _ultimates.Enqueue(ultimate);
     public void AddExtraTurn(Entity entity) => _extraTurns.Enqueue(entity);
 
     public void Tick()
     {
+        // TODO: Let entities unleash their ultimates here.
+        
         if (_followUps.Count > 0)
         {
             _followUps.Pop().Run();
@@ -77,7 +99,7 @@ public class Battle
             return;
         }
 
-        var nextEntity = _extraTurns.Count > 0 ? _extraTurns.Dequeue() : _scheduler.Schedule(_sides.Entities);
+        var nextEntity = _extraTurns.Count > 0 ? _extraTurns.Dequeue() : _scheduler.Schedule(Entities);
 
         Broadcast(o => o.BeforeTurnOf(nextEntity));
 

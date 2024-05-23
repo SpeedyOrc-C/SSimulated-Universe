@@ -3,9 +3,9 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Events;
 
-public class Skill : PlayerAction
+public class Skill<P> : PlayerAction<P> where P : Player
 {
-    public Skill(Player subject, Battle battle) : base(subject, battle) { }
+    public Skill(P subject, Battle battle) : base(subject, battle) { }
 
     public override void Run()
     {

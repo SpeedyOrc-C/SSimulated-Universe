@@ -1,3 +1,10 @@
+// type TargetsHits = [(Entity, [Hit])]
+global using TargetsHits = 
+    System.Collections.Generic.IEnumerable
+        <System.Collections.Generic.KeyValuePair
+            < SSimulated_Universe.Entities.Entity
+            , System.Collections.Generic.IEnumerable<SSimulated_Universe.Events.Hit>>>;
+
 using SSimulated_Universe.Entities;
 using SSimulated_Universe.Universe;
 
@@ -57,7 +64,7 @@ public enum DamageType
     Imaginary
 }
 
-public class BaseDamage
+public record BaseDamage
 {
     public DamageType DamageType;
     public double Base = 0;
@@ -82,8 +89,13 @@ public record Hit(
     double ToughnessDepletion
 );
 
-public class Attack
+public static class Attack
 {
+    public static readonly IReadOnlyList<double> NoSplit = new List<double> { 1 };
+    
+    // IEnumerable<KeyValuePair<Entity, IEnumerable<Hit>>>
+    // [(Entity, [Hit])]
+    
     /// <summary>
     /// A single attack may consist of multiple hits.
     /// Each hit's damage is a proportion of the total damage.
@@ -92,35 +104,35 @@ public class Attack
     /// This method has <b>side effect</b> since random critical damage is calculated here.
     /// </summary>
     /// <returns>Split damages</returns>
-    public static IEnumerable<Hit> SingleTarget(
+    public static TargetsHits SingleTarget(
         Entity attacker,
         Entity target,
-        List<double> hitSplit,
-        BaseDamage baseDamage) 
+        IReadOnlyList<double> hitSplit,
+        BaseDamage baseDamage)
     {
         // TODO: DMG Mitigation, Weaken
-
-        var normalizedHitSplit = hitSplit.Select(x => x / hitSplit.Count).ToList();
-
-        var damage
-            // Attacker
-            = baseDamage.By(attacker)
-            * attacker.DamageBoostMultiplier(baseDamage.DamageType)
-            // Attacker & Target
-            * attacker.ResistanceMultiplier(target, baseDamage.DamageType)
-            * attacker.DefenceMultiplier(target)
-            // Target
-            * target.VulnerabilityMultiplier(baseDamage.DamageType)
-            * target.BrokenMultiplier
-            ;
-
-        var weaknessBreak = 
-            baseDamage.WeaknessBreak * attacker.WeaknessBreakEfficiency.Eval;
+        
+        var normalizedHitSplit = hitSplit.Select(x => x / hitSplit.Count);
         
         var repeatedDamages = Enumerable
-            .Repeat(0, normalizedHitSplit.Count)
+            .Repeat(0, hitSplit.Count)
             .Select(_ =>
             {
+                Console.Write("See: ");
+                Console.WriteLine(attacker.CriticalRate.Eval);
+                
+                var damage
+                    // Attacker
+                    = baseDamage.By(attacker)
+                    * attacker.DamageBoostMultiplier(baseDamage.DamageType)
+                    // Attacker & Target
+                    * attacker.ResistanceMultiplier(target, baseDamage.DamageType)
+                    * attacker.DefenceMultiplier(target)
+                    // Target
+                    * target.VulnerabilityMultiplier(baseDamage.DamageType)
+                    * target.BrokenMultiplier
+                    ;
+                
                 var isCriticalAttack =
                     1 - Random.Shared.NextDouble() <= attacker.CriticalRate.Eval;
                 var multiplierCritical =
@@ -132,49 +144,63 @@ public class Attack
         var splitDamages =
             normalizedHitSplit
                 .Zip(repeatedDamages)
-                .Select(p => 
-                    new Hit(
+                .Select(p =>
+                {
+                    var weaknessBreak = 
+                        baseDamage.WeaknessBreak * attacker.WeaknessBreakEfficiency.Eval;
+                    
+                    return new Hit(
                         Attacker: attacker,
-                        Target : target,
+                        Target: target,
                         Damage: p.First * p.Second,
                         DamageType: baseDamage.DamageType,
                         ToughnessDepletion: p.First * weaknessBreak
-                    )
-                );
+                    );
+                });
         
-        return splitDamages;
+        return new Dictionary<Entity, IEnumerable<Hit>> { {target, splitDamages} };
     }
     
-    public static IEnumerable<Hit> Blast(
+    public static TargetsHits Blast(
         Entity attacker,
         Entity target,
         Battle battle,
-        List<double> hitSplit,
+        IReadOnlyList<double> hitSplit,
         BaseDamage baseDamage,
-        List<double> hitSplitAdjacent,
+        IReadOnlyList<double> hitSplitAdjacent,
         BaseDamage baseDamageAdjacent)
     {
-        var targetSide = battle.SideOf(target);
+        Side targetSide;
+        if (battle.Left.Contains(target)) targetSide = battle.Left;
+        else
+        {
+            if (battle.Right.Contains(target)) targetSide = battle.Right;
+            else
+            {
+                throw new Exception("Cannot find the entity.");
+            }
+        }
+
         var targetLeft = targetSide.FindLeft(target);
         var targetRight = targetSide.FindRight(target);
         
         var hits = 
             SingleTarget(attacker, target, hitSplit, baseDamage);
-        
+
         var hitsLeft =
             targetLeft is not null
-                ? SingleTarget(attacker, targetLeft, hitSplitAdjacent, baseDamageAdjacent) 
-                : Enumerable.Empty<Hit>();
+                ? SingleTarget(attacker, targetLeft, hitSplitAdjacent, baseDamageAdjacent)
+                : new Dictionary<Entity, IEnumerable<Hit>>();
 
         var hitsRight =
             targetRight is not null
                 ? SingleTarget(attacker, targetRight, hitSplitAdjacent, baseDamageAdjacent)
-                : Enumerable.Empty<Hit>();
+                : new Dictionary<Entity, IEnumerable<Hit>>();
         
-        return hits.Concat(hitsLeft).Concat(hitsRight);
+        return hits.Union(hitsLeft).Union(hitsRight);
     }
 
-    public static IEnumerable<Hit> Bounce(
+    public static TargetsHits Bounce(
         Entity attacker,
         Entity targetFirst,
         Battle battle,
@@ -182,22 +208,30 @@ public class Attack
         List<double> hitSplit,
         BaseDamage baseDamage)
     {
-        if (bounces <= 1)
-            throw new Exception("There must be at least 2 bounces.");
+        if (bounces == 1)
+            throw new Exception("For a single bounce, use the single target one instead.");
 
-        var targetSide = battle.SideOf(targetFirst);
+        Side targetSide;
+        if (battle.Left.Contains(targetFirst))
+            targetSide = battle.Left;
+        else if (battle.Right.Contains(targetFirst))
+            targetSide = battle.Right;
+        else
+            throw new Exception("Cannot find the entity.");
+        
+        var hitsHead = SingleTarget(attacker, targetFirst, hitSplit, baseDamage);
 
-        var hitsHead = Enumerable
-            .Repeat(SingleTarget(attacker, targetFirst, hitSplit, baseDamage), 1);
+        IEnumerable<KeyValuePair<Entity, IEnumerable<Hit>>> hitsTail = new Dictionary<Entity, IEnumerable<Hit>>();
+        for (int i = 1; i <= bounces - 1; i += 1)
+        {
+            var hits = SingleTarget(attacker, targetSide.PickRandomEntity(), hitSplit, baseDamage);
+            hitsTail = hitsTail.Union(hits);
+        }
 
-        var hitsTail = Enumerable
-            .Repeat<>(null, bounces - 1)
-            .Select(_ => SingleTarget(attacker, targetSide.PickRandomEntity(), hitSplit, baseDamage));
-
-        return hitsHead.Concat(hitsTail).SelectMany(x => x);
+        return hitsHead.Union(hitsTail);
     }
     
-    public static IEnumerable<Hit> AoE(
+    public static TargetsHits AoE(
         Entity attacker,
         Side targetSide,
         List<double> hitSplit,

@@ -26,8 +26,17 @@ public abstract class Effect : BattleObserver
         battle.Add(this);
     }
 
-    public virtual void CleanUp() => _battle.Remove(this);
+    /// <summary>
+    /// When an effect is removed, all the values this effect modified should be recovered.
+    /// So all effects with modifiers must recover the values here.
+    /// By default, we assume an effect have no need to recover.
+    /// </summary>
+    public virtual void CleanUp() { }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="entity"></param>
     public override void BeforeTurnOf(Entity entity)
     {
         switch (Duration)
@@ -37,27 +46,11 @@ public abstract class Effect : BattleObserver
                 break;
 
             case 1:
-                CleanUp();
+                _battle.Remove(this);
                 break;
 
             case null:
                 break;
         }
     }
-}
-
-public abstract class Debuff : Effect
-{
-    protected Debuff(Battle battle) : base(battle) { }
-    
-    protected Debuff(Entity giver, Entity target, uint? duration, Battle battle)
-        : base(giver, target, duration, battle) { }
-}
-
-public abstract class Buff : Effect
-{
-    protected Buff(Battle battle) : base(battle) { }
-    
-    protected Buff(Entity giver, Entity target, uint? duration, Battle battle)
-        : base(giver, target, duration, battle) { }
 }

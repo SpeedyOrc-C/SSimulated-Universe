@@ -4,7 +4,7 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Environment.WeaknessBreakEffects;
 
-public abstract class WeaknessBreakEffect : Debuff
+public abstract class WeaknessBreakEffect : Effect
 {
     protected WeaknessBreakEffect(Battle battle) : base(battle) { }
     

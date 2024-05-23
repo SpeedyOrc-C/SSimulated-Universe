@@ -12,11 +12,25 @@ class MainProgram
         
         var me = new TrailblazerDestruction(battle) {
             Level = 80,
-            // LevelBasicAttack = 7,
-            //
-            // MaxHp = new(4185),
-            // Attack = new (3255),
-            // Defence = new (1174),
         };
+        
+        var you = new TrailblazerDestruction(battle) {
+            Level = 80,
+        }; 
+        
+        battle.Left.Append(me);
+        battle.Right.Append(you);
+
+        me.MaxHp.Base = 4185;
+        me.Attack.Base = 3255;
+        if (me.Defence is not null)
+            me.Defence.Base = 1174;
+        
+        you.MaxHp.Base = 4185;
+        you.Attack.Base = 3255;
+        if (you.Defence is not null)
+            you.Defence.Base = 1174;
+
+        new FarewellHit(me, you, battle).Run();
     }
 }

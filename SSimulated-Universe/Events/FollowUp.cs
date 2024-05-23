@@ -3,9 +3,9 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Events;
 
-public class FollowUp : PlayerAction
+public class FollowUp<P> : PlayerAction<P> where P : Player
 {
-    public FollowUp(Player subject, Battle battle) : base(subject, battle)
+    public FollowUp(P subject, Battle battle) : base(subject, battle)
     {
     }
 

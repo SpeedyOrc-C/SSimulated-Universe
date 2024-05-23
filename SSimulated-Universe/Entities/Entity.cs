@@ -48,22 +48,20 @@ public abstract class Entity : BattleObserver, IRunner
     public double Hp { get; private set; }
     public double Energy { get; private set; }
     public double Toughness { get; private set; }
-    
+
     public readonly Battle Battle;
 
     public Entity(Battle battle)
     {
         Battle = battle;
     }
-
-    public Side OppositeSide => Battle.OppositeSideOf(this);
     
     /// <summary>
     /// If there is a DEF, this property returns as it is.
     /// Since monsters don't have DEF, their DEF are calculated from their levels.
     /// <br/>
     /// <br/>
-    /// <i>Monster's DEF = Level * 10 + 200</i>
+    /// Monster's DEF = Level * 10 + 200
     /// </summary>
     public double RealDefence => Defence?.Eval ?? Level * 10 + 200;
     public double RunnerSpeed => Speed.Eval;
@@ -88,6 +86,9 @@ public abstract class Entity : BattleObserver, IRunner
         1 + ResistancePenetration.Of(damageType).Eval - target.Resistance.Of(damageType).Eval;
 
     public double BrokenMultiplier => Toughness > 0 ? 0.9 : 1;
+    
+    public Side Side => Battle.SideOf(this);
+    public Side OppositeSide => Battle.OppositeSideOf(this);
     
     public abstract void YourTurn();
 
@@ -144,7 +145,7 @@ public abstract class Entity : BattleObserver, IRunner
                     * hit.Attacker.DefenceMultiplier(this)
                     * hit.Attacker.ResistanceMultiplier(this, hit.DamageType)
                     * VulnerabilityMultiplier(hit.DamageType)
-                    * BrokenMultiplier;
+                    * BrokenMultiplier
                     ;
 
                 TakeDamage(breakDamage);
@@ -173,49 +174,47 @@ public abstract class Entity : BattleObserver, IRunner
                     * VulnerabilityMultiplier(hit.DamageType)
                     ;
 
-                TakeDamage(superBreakDamage);
+                // TakeDamage(superBreakDamage);
             }
         }
 
         Battle.Broadcast(o => o.AfterTakeHit(hit.Attacker, this));
     }
 
-    public void Heal(double amount) =>
-        ChangeHp(amount);
+    public void Heal(double amount) => ChangeHp(amount);
+    public void TakeDamage(double amount) => ChangeHp(-amount);
 
-    public void TakeDamage(double amount) =>
-        ChangeHp(-amount);
-
-    public void ChangeHp(double delta)
+    private void ChangeHp(double amount)
     {
-        if (delta == 0) return;
+        if (amount == 0) return;
 
         var oldHp = Hp;
-        Hp = Math.Clamp(Hp + delta, 0, MaxHp.Eval);
+        Hp = Math.Clamp(Hp + amount, 0, MaxHp.Eval);
 
-        var realDelta = oldHp - Hp;
-        if (realDelta == 0) return;
-
-        Battle.Broadcast(o => o.HpChanged(this, realDelta));
-    }
-
-    public void Regenerate(double amount) => ChangeEnergy(amount * EnergyRegenerationRate.Eval);
-    public void Discharge(double amount) => ChangeEnergy(-amount);
-
-    /// <summary>
-    /// Regenerate energy.
-    /// Final energy may be larger due to entity's regeneration rate.
-    /// </summary>
-    public void ChangeEnergy(double delta)
-    {
+        var delta = oldHp - Hp;
         if (delta == 0) return;
 
+        Battle.Broadcast(o => o.HpChanged(this, delta));
+        
+        if (Hp == 0)
+            Battle.Broadcast(o => o.HpZeroed(this));
+    }
+
+    public void RegenerateBoosted(double amount) => ChangeEnergy(amount * EnergyRegenerationRate.Eval);
+    public void Regenerate(double amount) => ChangeEnergy(amount);
+    public void Discharge(double amount) => ChangeEnergy(-amount);
+    public void Discharge() => ChangeEnergy(-Energy);
+
+    private void ChangeEnergy(double amount)
+    {
+        if (amount == 0) return;
+
         var oldEnergy = Energy;
-        Energy = Math.Clamp(Energy + delta, 0, MaxEnergy ?? 0);
+        Energy = Math.Clamp(Energy + amount, 0, MaxEnergy ?? 0);
 
-        var realDelta = oldEnergy - Energy;
-        if (realDelta == 0) return;
+        var delta = oldEnergy - Energy;
+        if (delta == 0) return;
 
-        Battle.Broadcast(o => o.EnergyChanged(this, realDelta));
+        Battle.Broadcast(o => o.EnergyChanged(this, delta));
     }
 }

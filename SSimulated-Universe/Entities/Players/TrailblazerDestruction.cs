@@ -1,14 +1,14 @@
 using SSimulated_Universe.Events;
+using SSimulated_Universe.Modifiable.Number;
 using SSimulated_Universe.Universe;
-using SSimulated_Universe.Utility;
 
 namespace SSimulated_Universe.Entities.Players;
 
-class FarewellHit : BasicAttack
+public class FarewellHit : BasicAttack<TrailblazerDestruction>
 {
     private readonly Entity Target;
     
-    public FarewellHit(Player subject, Entity target, Battle battle) : base(subject, battle)
+    public FarewellHit(TrailblazerDestruction subject, Entity target, Battle battle) : base(subject, battle)
     {
         Target = target;
     }
@@ -17,36 +17,30 @@ class FarewellHit : BasicAttack
     {
         base.Run();
         
-        Subject.Regenerate(20);
-        
-        var hits = Attack.SingleTarget(
-            attacker: Subject, 
+        Subject.RegenerateBoosted(20);
+
+        var targetsHits = Attack.SingleTarget(
+            attacker: Subject,
             target: Target,
-            
-            hitSplit: new List<double> { 1 },
-            baseDamage: new BaseDamage 
+
+            hitSplit: Attack.NoSplit,
+            baseDamage: new BaseDamage
             {
                 WeaknessBreak = 30,
                 DamageType = DamageType.Physical,
-                BaseAttack = SMath.LevelMap(
-                    level: Subject.LevelBasicAttack,
-                    maxLevel: 7,
-                    minValue: 0.5,
-                    maxValue: 1.1
-                )
+                BaseAttack = Subject.LevelBasicAttackMap(0.5, 1.1)
             }
         );
-
-        foreach (var hit in hits)
-            hit.Target.TakeHit(hit);
+        
+        Subject.GiveHits(targetsHits);
     }
 }
 
-class RipHomeRun : Skill
+public class RipHomeRun : Skill<TrailblazerDestruction>
 {
     private readonly Entity Target;
     
-    public RipHomeRun(Player subject, Entity target, Battle battle) : base(subject, battle)
+    public RipHomeRun(TrailblazerDestruction subject, Entity target, Battle battle) : base(subject, battle)
     {
         Target = target;
     }
@@ -55,9 +49,9 @@ class RipHomeRun : Skill
     {
         base.Run();
 
-        Subject.Regenerate(30);
+        Subject.RegenerateBoosted(30);
 
-        var hits = Attack.Blast(
+        var targetsHits = Attack.Blast(
             attacker: Subject,
             target: Target,
             battle: Battle,
@@ -66,12 +60,7 @@ class RipHomeRun : Skill
             baseDamage: new BaseDamage
             {
                 DamageType = DamageType.Physical,
-                BaseAttack = SMath.LevelMap(
-                    level: Subject.LevelSkill,
-                    maxLevel: 12,
-                    minValue: 0.625, 
-                    maxValue: 137.5
-                ),
+                BaseAttack = Subject.LevelSkillMap(0.625, 1.375),
                 WeaknessBreak = 60,
             },
             
@@ -79,91 +68,122 @@ class RipHomeRun : Skill
             baseDamageAdjacent: new BaseDamage
             {
                 DamageType = DamageType.Physical,
-                BaseAttack = SMath.LevelMap(
-                    level: Subject.LevelSkill,
-                    maxLevel: 12,
-                    minValue: 0.625,
-                    maxValue: 137.5
-                ),
+                BaseAttack = Subject.LevelSkillMap(0.625, 1.375),
+                WeaknessBreak = 30,
             }
         );
-        
-        foreach (var hit in hits)
-            hit.Target.TakeHit(hit);
     }
 }
 
-class TrailblazerDestruction : Player
+public class StardustAce1 : Ultimate<TrailblazerDestruction>
 {
-    // public AttackSingle StardustAce_Single(Entity target) => new(
-    //     Battle,
-    //     energy: 5,
-    //     skillPointCost: 0,
-    //     skillPointGain: 0,
-    //     subject: this,
-    //     Battle,
-    //     @event: new AttackSingle(
-    //         attacker: this,
-    //         target,
-    //         new BaseDamage
-    //         {
-    //             DamageType = DamageType.Physical,
-    //             BaseAttack = SMath.LevelMap(
-    //                 level: LevelUltimate,
-    //                 maxLevel: 12,
-    //                 minValue: 3,
-    //                 maxValue: 4.8
-    //             ),
-    //             WeaknessBreak = 90,
-    //         }
-    //     )
-    // );
-    //
-    // public EntityAction StardustAce_Blast(Entity target) => new(
-    //     subject: this,
-    //     Battle,
-    //     energy: 5,
-    //     skillPointCost: 0,
-    //     skillPointGain: 0,
-    //     @event: new AttackBlast(
-    //         attacker: this,
-    //         target,
-    //         Battle,
-    //         baseDamage: new BaseDamage
-    //         {
-    //             DamageType = DamageType.Physical,
-    //             BaseAttack = SMath.LevelMap(
-    //                 level: LevelSkill,
-    //                 maxLevel: 12,
-    //                 minValue: 1.8, 
-    //                 maxValue: 2.88
-    //             ),
-    //             WeaknessBreak = 60,
-    //         },
-    //         adjacentBaseDamage: new BaseDamage
-    //         {
-    //             DamageType = DamageType.Physical,
-    //             BaseAttack = SMath.LevelMap(
-    //                 level: LevelSkill,
-    //                 maxLevel: 12,
-    //                 minValue: 1.08,
-    //                 maxValue: 1.728
-    //             ),
-    //             WeaknessBreak = 60,
-    //         }
-    //     )
-    // );
-    //
-    // public override Event YourTurn()
-    // {
-    //     var target = Battle.OppositeSideOf(this).EntityAt(0);
-    //     return FarewellHit(target);
-    // }
+    private readonly Entity Target;
+    
+    public StardustAce1(TrailblazerDestruction subject, Entity target, Battle battle) : base(subject, battle)
+    {
+        Target = target;
+    }
 
-    public TrailblazerDestruction(Battle battle) : base(battle) { }
+    public override void Run()
+    {
+        base.Run();
+
+        var hits = Attack.SingleTarget(
+            attacker: Subject,
+            target: Target,
+            hitSplit: Attack.NoSplit,
+            baseDamage: new BaseDamage
+            {
+                DamageType = DamageType.Physical,
+                BaseAttack = Subject.LevelUltimateMap(3, 4.8),
+                WeaknessBreak = 90,
+            }
+        );
+        
+        Subject.GiveHits(hits);
+    }
+}
+
+public class StardustAce3 : Ultimate<TrailblazerDestruction>
+{
+    private readonly Entity Target;
+    
+    public StardustAce3(TrailblazerDestruction subject, Entity target, Battle battle) : base(subject, battle)
+    {
+        Target = target;
+    }
+
+    public override void Run()
+    {
+        base.Run();
+
+        var targetsHits = Attack.Blast(
+            attacker: Subject,
+            target: Target,
+            battle: Battle,
+            hitSplit: Attack.NoSplit,
+            baseDamage: new BaseDamage
+            {
+                DamageType = DamageType.Physical,
+                BaseAttack = Subject.LevelUltimateMap(1.80, 2.88),
+                WeaknessBreak = 60,
+            },
+            hitSplitAdjacent: Attack.NoSplit,
+            baseDamageAdjacent: new BaseDamage
+            {
+                DamageType = DamageType.Physical,
+                BaseAttack = Subject.LevelUltimateMap(1.08, 1.728),
+                WeaknessBreak = 60,
+            }
+        );
+        
+        Subject.GiveHits(targetsHits);
+    }
+}
+
+public class TrailblazerDestruction : Player
+{
+    private static readonly ModifierDoubleImmediate Add20P = new (0.2);
+    
+    public override int EidolonBasicAttackAdd1 => 5;
+    public override int EidolonSkillAdd2 => 3;
+    public override int EidolonUltimateAdd2 => 5;
+    public override int EidolonTalentAdd2 => 3;
+    
+    public void GiveHits(TargetsHits targetsHits)
+    {
+        if (Eidolon4)
+        {
+            foreach (var (target, hits) in targetsHits)
+            {
+                if (target.Weaknesses.Eval.Contains(DamageType.Physical))
+                {
+                    Add20P.Modify(CriticalRate);
+                    {
+                        foreach (var hit in hits) 
+                            hit.Target.TakeHit(hit);
+                    }
+                    Add20P.Dismiss(CriticalRate);
+                }
+                else
+                {
+                    foreach (var hit in hits)
+                        hit.Target.TakeHit(hit);
+                }
+            }
+        }
+        else
+        {
+            foreach (var (_, hits) in targetsHits)
+            foreach (var hit in hits)
+                hit.Target.TakeHit(hit);
+        }
+    }
 
     public override void YourTurn()
     {
-        
+        throw new NotImplementedException();
     }
+
+    public TrailblazerDestruction(Battle battle) : base(battle) { }
 }

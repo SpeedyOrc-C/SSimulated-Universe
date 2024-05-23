@@ -3,9 +3,9 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Events;
 
-public class BasicAttack : PlayerAction
+public class BasicAttack<P> : PlayerAction<P> where P : Player
 {
-    public BasicAttack(Player subject, Battle battle) : base(subject, battle) { }
+    public BasicAttack(P subject, Battle battle) : base(subject, battle) { }
 
     public override void Run()
     {

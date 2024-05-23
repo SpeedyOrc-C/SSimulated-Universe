@@ -6,6 +6,11 @@
         <RootNamespace>SSimulated_Universe</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <LangVersion>11</LangVersion>
     </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Entities\Enemies\" />
+    </ItemGroup>
 
 </Project>
