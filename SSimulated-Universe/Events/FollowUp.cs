@@ -3,7 +3,7 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Events;
 
-public class FollowUp<P> : PlayerAction<P> where P : Player
+public abstract class FollowUp<P> : PlayerAction<P> where P : Player
 {
     public FollowUp(P subject, Battle battle) : base(subject, battle)
     {

@@ -1,3 +1,4 @@
+using SSimulated_Universe.Environment;
 using SSimulated_Universe.Events;
 using SSimulated_Universe.Modifiable.Number;
 using SSimulated_Universe.Modifiable.Set;
@@ -48,9 +49,10 @@ public abstract class Entity : BattleObserver, IRunner
     public double Hp { get; private set; }
     public double Energy { get; private set; }
     public double Toughness { get; private set; }
+    public DamageSource? LastDamageSource { get; private set; }
 
     public readonly Battle Battle;
-
+    
     public Entity(Battle battle)
     {
         Battle = battle;
@@ -87,8 +89,8 @@ public abstract class Entity : BattleObserver, IRunner
 
     public double BrokenMultiplier => Toughness > 0 ? 0.9 : 1;
     
-    public Side Side => Battle.SideOf(this);
-    public Side OppositeSide => Battle.OppositeSideOf(this);
+    public Side We => Battle.SideOf(this);
+    public Side Opposite => Battle.OppositeSideOf(this);
     
     public abstract void YourTurn();
 
@@ -103,6 +105,7 @@ public abstract class Entity : BattleObserver, IRunner
     {
         Battle.Broadcast(o => o.BeforeTakeHit(hit.Attacker, this));
         
+        LastDamageSource = new DamageSourceEntity(hit.Attacker, hit.DamageMethod);
         TakeDamage(hit.Damage);
 
         var isDepletingToughness =
@@ -179,6 +182,12 @@ public abstract class Entity : BattleObserver, IRunner
         }
 
         Battle.Broadcast(o => o.AfterTakeHit(hit.Attacker, this));
+    }
+
+    public void TakeEffectDamage(double damage, Effect effect)
+    {
+        LastDamageSource = new DamageSourceEffect(effect);
+        TakeDamage(damage);
     }
 
     public void Heal(double amount) => ChangeHp(amount);

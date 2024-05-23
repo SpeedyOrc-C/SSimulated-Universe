@@ -6,10 +6,15 @@ namespace SSimulated_Universe.Environment.WeaknessBreakEffects;
 
 public abstract class WeaknessBreakEffect : Effect
 {
-    protected WeaknessBreakEffect(Battle battle) : base(battle) { }
+    public readonly Entity Giver;
+    public readonly Entity Target;
     
     protected WeaknessBreakEffect(Entity giver, Entity target, uint? duration, Battle battle)
-        : base(giver, target, duration, battle) { }
+        : base(battle, duration)
+    {
+        Giver = giver;
+        Target = target;
+    }
 
     private double Damage =>
           BaseDamage
@@ -21,5 +26,8 @@ public abstract class WeaknessBreakEffect : Effect
 
     protected abstract double BaseDamage { get; }
 
-    protected virtual void WhenTriggered(Entity entity) => entity.TakeDamage(Damage);
+    protected virtual void WhenTriggered(Entity entity)
+    {
+        entity.TakeEffectDamage(Damage, this);
+    }
 }

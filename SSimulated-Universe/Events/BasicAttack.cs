@@ -3,7 +3,7 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Events;
 
-public class BasicAttack<P> : PlayerAction<P> where P : Player
+public abstract class BasicAttack<P> : PlayerAction<P> where P : Player
 {
     public BasicAttack(P subject, Battle battle) : base(subject, battle) { }
 

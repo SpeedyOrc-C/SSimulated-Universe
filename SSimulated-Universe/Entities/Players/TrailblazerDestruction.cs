@@ -1,3 +1,6 @@
+// Hello Star Rail!
+
+using SSimulated_Universe.Environment;
 using SSimulated_Universe.Events;
 using SSimulated_Universe.Modifiable.Number;
 using SSimulated_Universe.Universe;
@@ -7,7 +10,7 @@ namespace SSimulated_Universe.Entities.Players;
 public class FarewellHit : BasicAttack<TrailblazerDestruction>
 {
     private readonly Entity Target;
-    
+
     public FarewellHit(TrailblazerDestruction subject, Entity target, Battle battle) : base(subject, battle)
     {
         Target = target;
@@ -16,14 +19,14 @@ public class FarewellHit : BasicAttack<TrailblazerDestruction>
     public override void Run()
     {
         base.Run();
-        
+
         Subject.RegenerateBoosted(20);
 
         var targetsHits = Attack.SingleTarget(
             attacker: Subject,
             target: Target,
-
-            hitSplit: Attack.NoSplit,
+            damageMethod: DamageMethod.BasicAttack,
+            hitSplit: Attack.One,
             baseDamage: new BaseDamage
             {
                 WeaknessBreak = 30,
@@ -31,15 +34,16 @@ public class FarewellHit : BasicAttack<TrailblazerDestruction>
                 BaseAttack = Subject.LevelBasicAttackMap(0.5, 1.1)
             }
         );
-        
-        Subject.GiveHits(targetsHits);
+
+        Subject.GiveTargetsHits(targetsHits);
     }
 }
 
 public class RipHomeRun : Skill<TrailblazerDestruction>
 {
     private readonly Entity Target;
-    
+    private static readonly ModifierDoubleImmediate DamageBooster = new(0.25);
+
     public RipHomeRun(TrailblazerDestruction subject, Entity target, Battle battle) : base(subject, battle)
     {
         Target = target;
@@ -54,9 +58,10 @@ public class RipHomeRun : Skill<TrailblazerDestruction>
         var targetsHits = Attack.Blast(
             attacker: Subject,
             target: Target,
+            damageMethod: DamageMethod.Skill,
             battle: Battle,
             
-            hitSplit: new List<double> { 1 },
+            hitSplit: Attack.One,
             baseDamage: new BaseDamage
             {
                 DamageType = DamageType.Physical,
@@ -64,7 +69,7 @@ public class RipHomeRun : Skill<TrailblazerDestruction>
                 WeaknessBreak = 60,
             },
             
-            hitSplitAdjacent: new List<double> { 1 },
+            hitSplitAdjacent: Attack.One,
             baseDamageAdjacent: new BaseDamage
             {
                 DamageType = DamageType.Physical,
@@ -72,14 +77,27 @@ public class RipHomeRun : Skill<TrailblazerDestruction>
                 WeaknessBreak = 30,
             }
         );
+
+        if (Subject.FightingWill)
+        {
+            DamageBooster.Modify(Subject.Boost.Physical);
+            {
+                Subject.GiveTargetsHits(targetsHits);
+            }
+            DamageBooster.Dismiss(Subject.Boost.Physical);
+        }
+        else
+        {
+            Subject.GiveTargetsHits(targetsHits);
+        }
     }
 }
 
-public class StardustAce1 : Ultimate<TrailblazerDestruction>
+public class StardustAce_BlowoutFarewellHit : Ultimate<TrailblazerDestruction>
 {
     private readonly Entity Target;
-    
-    public StardustAce1(TrailblazerDestruction subject, Entity target, Battle battle) : base(subject, battle)
+
+    public StardustAce_BlowoutFarewellHit(TrailblazerDestruction subject, Entity target, Battle battle) : base(subject, battle)
     {
         Target = target;
     }
@@ -91,7 +109,8 @@ public class StardustAce1 : Ultimate<TrailblazerDestruction>
         var hits = Attack.SingleTarget(
             attacker: Subject,
             target: Target,
-            hitSplit: Attack.NoSplit,
+            damageMethod: DamageMethod.Ultimate,
+            hitSplit: Attack.One,
             baseDamage: new BaseDamage
             {
                 DamageType = DamageType.Physical,
@@ -99,16 +118,17 @@ public class StardustAce1 : Ultimate<TrailblazerDestruction>
                 WeaknessBreak = 90,
             }
         );
-        
-        Subject.GiveHits(hits);
+
+        Subject.GiveTargetsHits(hits);
     }
 }
 
-public class StardustAce3 : Ultimate<TrailblazerDestruction>
+public class StardustAce_BlowoutRipHomeRun : Ultimate<TrailblazerDestruction>
 {
     private readonly Entity Target;
-    
-    public StardustAce3(TrailblazerDestruction subject, Entity target, Battle battle) : base(subject, battle)
+    private static readonly ModifierDoubleImmediate DamageBooster = new(0.25);
+
+    public StardustAce_BlowoutRipHomeRun(TrailblazerDestruction subject, Entity target, Battle battle) : base(subject, battle)
     {
         Target = target;
     }
@@ -120,15 +140,18 @@ public class StardustAce3 : Ultimate<TrailblazerDestruction>
         var targetsHits = Attack.Blast(
             attacker: Subject,
             target: Target,
+            damageMethod: DamageMethod.Ultimate,
             battle: Battle,
-            hitSplit: Attack.NoSplit,
+            
+            hitSplit: Attack.One,
             baseDamage: new BaseDamage
             {
                 DamageType = DamageType.Physical,
                 BaseAttack = Subject.LevelUltimateMap(1.80, 2.88),
                 WeaknessBreak = 60,
             },
-            hitSplitAdjacent: Attack.NoSplit,
+            
+            hitSplitAdjacent: Attack.One,
             baseDamageAdjacent: new BaseDamage
             {
                 DamageType = DamageType.Physical,
@@ -136,54 +159,137 @@ public class StardustAce3 : Ultimate<TrailblazerDestruction>
                 WeaknessBreak = 60,
             }
         );
+
+        if (Subject.FightingWill)
+        {
+            DamageBooster.Modify(Subject.Boost.Physical);
+            {
+                Subject.GiveTargetsHits(targetsHits);
+            }
+            DamageBooster.Dismiss(Subject.Boost.Physical);
+        }
+        else
+        {
+            Subject.GiveTargetsHits(targetsHits);
+        }
+    }
+}
+
+public class PerfectPickoff : SelfEffect<TrailblazerDestruction>
+{
+    public const int MaxStackCount = 2;
+
+    private int StackCount = 0;
+    private readonly ModifierDoubleImmediate AttackModifier = new (0);
+    private readonly ModifierDoubleImmediate DefenceModifier = new(0);
+    
+    public PerfectPickoff(TrailblazerDestruction self, Battle battle) : base(self, battle) { }
+    
+    public override void WeaknessBroken(Entity entity)
+    {
+        if (entity.LastDamageSource is not DamageSourceEntity damageSourceEntity) return;
+        if (damageSourceEntity.Source != Self) return;
+
+        if (StackCount == 0)
+        {
+            AttackModifier.Modify(Self.Attack);
+            
+            if (Self.Perseverance)
+                DefenceModifier.Modify(Self.Defence);
+        }
+
+        if (StackCount < MaxStackCount) 
+            StackCount += 1;
         
-        Subject.GiveHits(targetsHits);
+        AttackModifier.Value = Self.LevelTalentMap(0.1, 0.22) * StackCount;
+        DefenceModifier.Value = 0.1 * StackCount;
+    }
+
+    public override void CleanUp()
+    {
+        AttackModifier.DismissAll();
     }
 }
 
 public class TrailblazerDestruction : Player
 {
-    private static readonly ModifierDoubleImmediate Add20P = new (0.2);
+    private static readonly ModifierDoubleImmediate Add20P = new(0.2);
+    private bool AFallingStarTriggered = false;
     
-    public override int EidolonBasicAttackAdd1 => 5;
+    // Talent
+    public readonly PerfectPickoff PerfectPickoff;
+
+    // Extra abilities
+    public bool ReadyForBattle = false;
+    public bool Perseverance = false;
+    public bool FightingWill = false;
+
     public override int EidolonSkillAdd2 => 3;
-    public override int EidolonUltimateAdd2 => 5;
     public override int EidolonTalentAdd2 => 3;
-    
-    public void GiveHits(TargetsHits targetsHits)
+    public override int EidolonBasicAttackAdd1 => 5;
+    public override int EidolonUltimateAdd2 => 5;
+
+    public void GiveTargetsHits(TargetsHits targetsHits)
     {
-        if (Eidolon4)
+        var targetsHavePhysicalWeakness = false;
+        
+        foreach (var (target, hits) in targetsHits)
         {
-            foreach (var (target, hits) in targetsHits)
+            if (target.Weaknesses.Eval.Contains(DamageType.Physical))
+                targetsHavePhysicalWeakness = true;
+            
+            if (Eidolon4 && target.Toughness == 0)
             {
-                if (target.Weaknesses.Eval.Contains(DamageType.Physical))
+                Add20P.Modify(CriticalRate);
                 {
-                    Add20P.Modify(CriticalRate);
-                    {
-                        foreach (var hit in hits) 
-                            hit.Target.TakeHit(hit);
-                    }
-                    Add20P.Dismiss(CriticalRate);
+                    GiveTargetHits(target, hits);
                 }
-                else
-                {
-                    foreach (var hit in hits)
-                        hit.Target.TakeHit(hit);
-                }
+                Add20P.Dismiss(CriticalRate);
+            }
+            else
+            {
+                GiveTargetHits(target, hits);
             }
         }
-        else
-        {
-            foreach (var (_, hits) in targetsHits)
-            foreach (var hit in hits)
-                hit.Target.TakeHit(hit);
-        }
+        
+        if (Eidolon2 && targetsHavePhysicalWeakness)
+            Heal(0.05 * Attack.Eval);
     }
 
+    private static void GiveTargetHits(Entity target, IEnumerable<Hit> hits)
+    {
+        foreach (var hit in hits)
+            target.TakeHit(hit);
+    }
+
+    public override void EntityJoined(Entity entity)
+    {
+        if (entity != this) return;
+        if (!ReadyForBattle) return;
+        
+        RegenerateBoosted(15);
+    }
+
+    public override void Died(Entity entity)
+    {
+        if (!Eidolon1) return;
+        if (AFallingStarTriggered) return;
+        if (entity.LastDamageSource is not DamageSourceEntity damageSourceEntity) return;
+        if (damageSourceEntity.Source != this) return;
+
+        RegenerateBoosted(10);
+        AFallingStarTriggered = true;
+    }
+    
     public override void YourTurn()
     {
-        throw new NotImplementedException();
+        AFallingStarTriggered = false;
+        
+        // TODO: Please say something!
     }
 
-    public TrailblazerDestruction(Battle battle) : base(battle) { }
+    public TrailblazerDestruction(Battle battle) : base(battle)
+    {
+        PerfectPickoff = new PerfectPickoff(this, Battle);
+    }
 }

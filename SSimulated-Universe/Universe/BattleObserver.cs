@@ -4,13 +4,18 @@ using SSimulated_Universe.Environment;
 namespace SSimulated_Universe.Universe;
 
 /// <summary>
-/// Every entity and effect can listen to these events and do whatever they want.
+/// Every entity and effect can listen to these events and
+/// do whatever they want by overriding them.
 /// <br/>
 /// 正在观察战况的何同学……
 /// </summary>
 public class BattleObserver
 {
     public virtual void EntityJoined(Entity entity) { }
+    /// <summary>
+    /// An entity left from the battle.
+    /// This does not mean it has died.
+    /// </summary>
     public virtual void EntityLeft(Entity entity) { }
     public virtual void EffectStarted(Effect effect) { }
     public virtual void EffectEnded(Effect effect) { }
@@ -47,5 +52,12 @@ public class BattleObserver
     public virtual void SkillPointChanged(Side side, int delta) { }
     public virtual void EnergyChanged(Entity entity, double delta) { }
     public virtual void HpChanged(Entity entity, double delta) { }
+    /// <summary>
+    /// An entity's HP fell to zero.
+    /// This does not mean it has died.
+    /// </summary>
     public virtual void HpZeroed(Entity entity) { }
+    public virtual void Died(Entity entity) { }
 }
+
+public record CauseOfDeath();

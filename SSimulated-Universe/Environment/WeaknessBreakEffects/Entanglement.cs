@@ -10,7 +10,8 @@ public class Entanglement : WeaknessBreakEffect
     
     public int StackCount = 1;
 
-    public Entanglement(Battle battle) : base(battle) { }
+    public Entanglement(Entity giver, Entity target, uint? duration, Battle battle)
+        : base(giver, target, duration, battle) { }
     
     protected override double BaseDamage =>
         0.6 * StackCount * Giver.LevelMultiplier * Target.MaxToughnessMultiplier;

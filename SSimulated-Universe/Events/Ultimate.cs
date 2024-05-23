@@ -3,7 +3,7 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Events;
 
-public class Ultimate<P> : PlayerAction<P> where P : Player
+public abstract class Ultimate<P> : PlayerAction<P> where P : Player
 {
     public Ultimate(P subject, Battle battle) : base(subject, battle) { }
 

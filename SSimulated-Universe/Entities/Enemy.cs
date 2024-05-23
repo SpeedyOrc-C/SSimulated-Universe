@@ -8,10 +8,18 @@ public abstract class Enemy : Entity
     {
     }
     
+    /// <summary>
+    /// All enemy will die by default.
+    /// Override it to allow exceptions like resurrection. 
+    /// </summary>
     public override void HpZeroed(Entity entity)
     {
-        // Normal enemies will leave (die) when their HP reach zero.
-        if (entity == this)
-            Battle.Remove(this);
+        if (entity != this) return;
+
+        if (entity.LastDamageSource is null)
+            throw new Exception("Cannot find out why this enemy died.");
+        
+        Battle.Broadcast(o => o.Died(this));
+        Battle.Remove(this);
     }
 }

@@ -1,25 +1,15 @@
 using SSimulated_Universe.Entities;
-using SSimulated_Universe.Modifiable.Number;
 using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Environment;
 
 public abstract class Effect : BattleObserver
 {
-    public Entity Giver;
-    public Entity Target;
-    public uint? Duration;
+    private uint? Duration;
     private readonly Battle _battle;
 
-    public Effect(Battle battle)
+    protected Effect(Battle battle, uint? duration = null)
     {
-        _battle = battle;
-    }
-
-    public Effect(Entity giver, Entity target, uint? duration, Battle battle)
-    {
-        Giver = giver;
-        Target = target;
         Duration = duration;
         _battle = battle;
 
@@ -34,9 +24,9 @@ public abstract class Effect : BattleObserver
     public virtual void CleanUp() { }
 
     /// <summary>
-    /// 
+    /// All Effects automatically counts down.
+    /// When overriding this method, make sure to call this base method.
     /// </summary>
-    /// <param name="entity"></param>
     public override void BeforeTurnOf(Entity entity)
     {
         switch (Duration)
@@ -54,3 +44,14 @@ public abstract class Effect : BattleObserver
         }
     }
 }
+
+public abstract class SelfEffect<T> : Effect where T : Entity
+{
+    protected readonly T Self;
+
+    protected SelfEffect(T self, Battle battle, uint? duration = null) : base(battle, duration)
+    {
+        Self = self;
+    }
+}
+

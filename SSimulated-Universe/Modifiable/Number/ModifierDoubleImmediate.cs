@@ -2,7 +2,7 @@ namespace SSimulated_Universe.Modifiable.Number;
 
 public sealed class ModifierDoubleImmediate : ModifierNumber<ModifiableDouble>
 {
-    public readonly double Value;
+    public double Value;
 
     public ModifierDoubleImmediate(double value)
     {

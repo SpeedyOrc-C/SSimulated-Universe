@@ -1,5 +1,3 @@
-using SSimulated_Universe.Entities;
-
 namespace SSimulated_Universe.Utility;
 
 public static class SMath
