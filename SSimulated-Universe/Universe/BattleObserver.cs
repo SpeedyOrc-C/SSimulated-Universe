@@ -59,5 +59,3 @@ public class BattleObserver
     public virtual void HpZeroed(Entity entity) { }
     public virtual void Died(Entity entity) { }
 }
-
-public record CauseOfDeath();
