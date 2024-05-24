@@ -232,6 +232,7 @@ public class TrailblazerDestruction : Player
     public void GiveTargetsHits(TargetsHits targetsHits)
     {
         var targetsHavePhysicalWeakness = false;
+        AFallingStarTriggered = false;
         
         foreach (var (target, hits) in targetsHits)
         {
@@ -283,8 +284,6 @@ public class TrailblazerDestruction : Player
     
     public override void YourTurn()
     {
-        AFallingStarTriggered = false;
-        
         // TODO: Please say something!
     }
 
