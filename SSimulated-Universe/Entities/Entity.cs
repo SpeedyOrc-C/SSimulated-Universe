@@ -28,7 +28,6 @@ public abstract class Entity : BattleObserver, IRunner
 
     public readonly ModifiableDouble MaxHp = new(1000);
     public readonly ModifiableDouble Attack = new(1000);
-    public readonly ModifiableDouble? Defence = new(1000);
     public readonly ModifiableDouble Speed = new(100);
     public readonly ModifiableDouble EnergyRegenerationRate = new(1);
     public readonly ModifiableDouble WeaknessBreakEfficiency = new(1);
@@ -65,7 +64,7 @@ public abstract class Entity : BattleObserver, IRunner
     /// <br/>
     /// Monster's DEF = Level * 10 + 200
     /// </summary>
-    public double RealDefence => Defence?.Eval ?? Level * 10 + 200;
+    public abstract double RealDefence { get; }
     public double RunnerSpeed => Speed.Eval;
     public double RunnerDistance { get => Distance; set => Distance = value; }
 
@@ -191,7 +190,7 @@ public abstract class Entity : BattleObserver, IRunner
     }
 
     public void Heal(double amount) => ChangeHp(amount);
-    public void TakeDamage(double amount) => ChangeHp(-amount);
+    private void TakeDamage(double amount) => ChangeHp(-amount);
 
     private void ChangeHp(double amount)
     {

@@ -4,6 +4,8 @@ namespace SSimulated_Universe.Entities;
 
 public abstract class Enemy : Entity
 {
+    public override double RealDefence => Level * 10 + 200;
+    
     protected Enemy(Battle battle) : base(battle)
     {
     }

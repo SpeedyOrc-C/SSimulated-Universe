@@ -1,3 +1,4 @@
+using SSimulated_Universe.Modifiable.Number;
 using SSimulated_Universe.Universe;
 using SSimulated_Universe.Utility;
 
@@ -5,6 +6,9 @@ namespace SSimulated_Universe.Entities;
 
 public abstract class Player : Entity
 {
+    public readonly ModifiableDouble Defence = new(1000);
+    public override double RealDefence => Defence.Eval;
+
     protected int _levelBasicAttack = 1;
     protected int _levelTalent = 1;
     protected int _levelUltimate = 1;
