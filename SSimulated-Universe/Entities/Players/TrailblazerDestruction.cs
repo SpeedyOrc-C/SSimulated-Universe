@@ -66,7 +66,7 @@ public class RipHomeRun : Skill<TrailblazerDestruction>
             {
                 DamageType = DamageType.Physical,
                 BaseAttack = Subject.LevelSkillMap(0.625, 1.375),
-                WeaknessBreak = 60,
+                WeaknessBreak = 60
             },
             
             hitSplitAdjacent: Attack.One,
@@ -74,7 +74,7 @@ public class RipHomeRun : Skill<TrailblazerDestruction>
             {
                 DamageType = DamageType.Physical,
                 BaseAttack = Subject.LevelSkillMap(0.625, 1.375),
-                WeaknessBreak = 30,
+                WeaknessBreak = 30
             }
         );
 
@@ -115,7 +115,7 @@ public class StardustAce_BlowoutFarewellHit : Ultimate<TrailblazerDestruction>
             {
                 DamageType = DamageType.Physical,
                 BaseAttack = Subject.LevelUltimateMap(3, 4.8),
-                WeaknessBreak = 90,
+                WeaknessBreak = 90
             }
         );
 
@@ -148,7 +148,7 @@ public class StardustAce_BlowoutRipHomeRun : Ultimate<TrailblazerDestruction>
             {
                 DamageType = DamageType.Physical,
                 BaseAttack = Subject.LevelUltimateMap(1.80, 2.88),
-                WeaknessBreak = 60,
+                WeaknessBreak = 60
             },
             
             hitSplitAdjacent: Attack.One,
@@ -156,7 +156,7 @@ public class StardustAce_BlowoutRipHomeRun : Ultimate<TrailblazerDestruction>
             {
                 DamageType = DamageType.Physical,
                 BaseAttack = Subject.LevelUltimateMap(1.08, 1.728),
-                WeaknessBreak = 60,
+                WeaknessBreak = 60
             }
         );
 
@@ -175,12 +175,12 @@ public class StardustAce_BlowoutRipHomeRun : Ultimate<TrailblazerDestruction>
     }
 }
 
-public class PerfectPickoff : SelfEffect<TrailblazerDestruction>
+public class PerfectPickoff : EffectSelf<TrailblazerDestruction>
 {
     public const int MaxStackCount = 2;
 
-    private int StackCount = 0;
-    private readonly ModifierDoubleImmediate AttackModifier = new (0);
+    private int StackCount;
+    private readonly ModifierDoubleImmediate AttackModifier = new(0);
     private readonly ModifierDoubleImmediate DefenceModifier = new(0);
     
     public PerfectPickoff(TrailblazerDestruction self, Battle battle) : base(self, battle) { }
@@ -214,20 +214,20 @@ public class PerfectPickoff : SelfEffect<TrailblazerDestruction>
 public class TrailblazerDestruction : Player
 {
     private static readonly ModifierDoubleImmediate Add20P = new(0.2);
-    private bool AFallingStarTriggered = false;
+    private bool AFallingStarTriggered;
     
     // Talent
-    public readonly PerfectPickoff PerfectPickoff;
+    private readonly PerfectPickoff PerfectPickoff;
 
     // Extra abilities
     public bool ReadyForBattle = false;
     public bool Perseverance = false;
     public bool FightingWill = false;
 
-    public override int EidolonSkillAdd2 => 3;
-    public override int EidolonTalentAdd2 => 3;
-    public override int EidolonBasicAttackAdd1 => 5;
-    public override int EidolonUltimateAdd2 => 5;
+    protected override int EidolonSkillAdd2 => 3;
+    protected override int EidolonTalentAdd2 => 3;
+    protected override int EidolonBasicAttackAdd1 => 5;
+    protected override int EidolonUltimateAdd2 => 5;
 
     public void GiveTargetsHits(TargetsHits targetsHits)
     {
@@ -285,6 +285,11 @@ public class TrailblazerDestruction : Player
     public override void YourTurn()
     {
         // TODO: Please say something!
+    }
+
+    protected override void CleanUp()
+    {
+        PerfectPickoff.CleanUp();
     }
 
     public TrailblazerDestruction(Battle battle) : base(battle)

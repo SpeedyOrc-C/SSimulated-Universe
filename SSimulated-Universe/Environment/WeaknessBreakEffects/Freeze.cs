@@ -3,10 +3,9 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Environment.WeaknessBreakEffects;
 
-public class Freeze : WeaknessBreakEffect
+public class Freeze : WeaknessBreakEffectTimed
 {
-    public Freeze(Entity giver, Entity target, uint? duration, Battle battle)
-        : base(giver, target, duration, battle) { }
+    public Freeze(Entity giver, Entity target, Battle battle) : base(giver, target, 1, battle) { }
 
     protected override double BaseDamage => Giver.LevelMultiplier;
 

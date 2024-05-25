@@ -15,13 +15,13 @@ public class DamageTypeModifiableDoubles
 
     public DamageTypeModifiableDoubles()
     {
-        Physical = new(0);
-        Fire = new(0);
-        Ice = new(0);
-        Lightning = new(0);
-        Wind = new(0);
-        Quantum = new(0);
-        Imaginary = new(0);
+        Physical = new ModifiableDouble(0);
+        Fire = new ModifiableDouble(0);
+        Ice = new ModifiableDouble(0);
+        Lightning = new ModifiableDouble(0);
+        Wind = new ModifiableDouble(0);
+        Quantum = new ModifiableDouble(0);
+        Imaginary = new ModifiableDouble(0);
     }
 
     public DamageTypeModifiableDoubles(ModifiableDouble physical, ModifiableDouble fire, ModifiableDouble ice,

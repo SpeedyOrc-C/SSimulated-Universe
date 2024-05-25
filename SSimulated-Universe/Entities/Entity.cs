@@ -11,6 +11,7 @@ public abstract class Entity : BattleObserver, IRunner
     public string Name = "Nameless";
     public bool IsEliteOrBoss = false;
     public bool SkipNextTurn = false;
+    public bool SuperBreakDamageEnabled = false;
 
     public ushort Level = 1;
     public double? MaxEnergy = 100;
@@ -49,21 +50,7 @@ public abstract class Entity : BattleObserver, IRunner
     public double Energy { get; private set; }
     public double Toughness { get; private set; }
     public DamageSource? LastDamageSource { get; private set; }
-
-    public readonly Battle Battle;
     
-    public Entity(Battle battle)
-    {
-        Battle = battle;
-    }
-    
-    /// <summary>
-    /// If there is a DEF, this property returns as it is.
-    /// Since monsters don't have DEF, their DEF are calculated from their levels.
-    /// <br/>
-    /// <br/>
-    /// Monster's DEF = Level * 10 + 200
-    /// </summary>
     public abstract double RealDefence { get; }
     public double RunnerSpeed => Speed.Eval;
     public double RunnerDistance { get => Distance; set => Distance = value; }
@@ -92,12 +79,14 @@ public abstract class Entity : BattleObserver, IRunner
     public Side Opposite => Battle.OppositeSideOf(this);
     
     public abstract void YourTurn();
+    protected abstract void HpZeroed();
+    protected abstract void CleanUp();
 
     public void Reset()
     {
         Hp = MaxHp.Eval;
         Toughness = MaxToughness;
-        Energy = MaxEnergy ?? 0;
+        Energy = 0;
     }
 
     public void TakeHit(Hit hit)
@@ -122,70 +111,77 @@ public abstract class Entity : BattleObserver, IRunner
                 (int) Math.Ceiling(Toughness / ToughnessGaugeSize);
 
             if (brokenGaugesCount > 0)
-            {
-                for (var i = 1; i <= brokenGaugesCount; i += 1)
-                    Battle.Broadcast(o => o.WeaknessBroken(this));
+                for (var i = 1; i <= brokenGaugesCount; i += 1) 
+                    TakeBreakDamage();
 
-                var breakBaseDamage
-                    = LevelMultiplier
-                    * MaxToughnessMultiplier
-                    * hit.DamageType switch
-                    {
-                        DamageType.Physical  => 2,
-                        DamageType.Fire      => 2,
-                        DamageType.Ice       => 1,
-                        DamageType.Lightning => 1,
-                        DamageType.Wind      => 1.5,
-                        DamageType.Quantum   => 0.5,
-                        DamageType.Imaginary => 0.5,
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
+            if (hit.Attacker.SuperBreakDamageEnabled && Toughness == 0) 
+                TakeSuperBreakDamage();
+        }
 
-                var breakDamage 
+        Battle.Broadcast(o => o.AfterTakeHit(hit.Attacker, this));
+        return;
+
+        void TakeBreakDamage()
+        {
+            Battle.Broadcast(o => o.WeaknessBroken(this));
+                    
+            var breakBaseDamage
+                = hit.Attacker.LevelMultiplier
+                * MaxToughnessMultiplier
+                * hit.DamageType switch
+                {
+                    DamageType.Physical  => 2,
+                    DamageType.Fire      => 2,
+                    DamageType.Ice       => 1,
+                    DamageType.Lightning => 1,
+                    DamageType.Wind      => 1.5,
+                    DamageType.Quantum   => 0.5,
+                    DamageType.Imaginary => 0.5,
+                    _                    => throw new ArgumentOutOfRangeException()
+                };
+    
+            var breakDamage 
                     = breakBaseDamage
                     * (1 + BreakEffect.Eval)
                     * hit.Attacker.DefenceMultiplier(this)
                     * hit.Attacker.ResistanceMultiplier(this, hit.DamageType)
                     * VulnerabilityMultiplier(hit.DamageType)
                     * BrokenMultiplier
-                    ;
-
-                TakeDamage(breakDamage);
-            }
-
-            if (Toughness == 0)
-            {
-                // TODO: Dance With the One Multiplier
-                var danceWithTheOneMultiplier =
-                    Battle.SideOf(this).Count switch
-                    {
-                        1 => 0.6,
-                        2 => 0.5,
-                        3 => 0.4,
-                        4 => 0.3,
-                        > 5 => 0.2,
-                        _ => throw new Exception("No entity at this side.")
-                    };
-
-                var superBreakDamage
-                    = LevelMultiplier
-                    * hit.ToughnessDepletion / 30
-                    * (1 + BreakEffect.Eval)
-                    * hit.Attacker.DefenceMultiplier(this)
-                    * hit.Attacker.ResistanceMultiplier(this, hit.DamageType)
-                    * VulnerabilityMultiplier(hit.DamageType)
-                    ;
-
-                // TakeDamage(superBreakDamage);
-            }
+                ;
+    
+            TakeDamage(breakDamage);
         }
+        
+        void TakeSuperBreakDamage()
+        {
+            var danceWithTheOneMultiplier =
+                Battle.SideOf(this).Count switch
+                {
+                    1   => 0.6,
+                    2   => 0.5,
+                    3   => 0.4,
+                    4   => 0.3,
+                    > 5 => 0.2,
+                    _   => throw new Exception("No entity at this side.")
+                };
 
-        Battle.Broadcast(o => o.AfterTakeHit(hit.Attacker, this));
+            var superBreakDamage
+                = hit.Attacker.LevelMultiplier
+                * hit.ToughnessDepletion / 30
+                * (1 + BreakEffect.Eval)
+                * danceWithTheOneMultiplier
+                * hit.Attacker.DefenceMultiplier(this)
+                * hit.Attacker.ResistanceMultiplier(this, hit.DamageType)
+                * VulnerabilityMultiplier(hit.DamageType)
+                ;
+
+            TakeDamage(superBreakDamage);
+        }
     }
 
-    public void TakeEffectDamage(double damage, Effect effect)
+    public void TakeEffectDamage(double damage, EffectTimed effectTimed)
     {
-        LastDamageSource = new DamageSourceEffect(effect);
+        LastDamageSource = new DamageSourceEffect(effectTimed);
         TakeDamage(damage);
     }
 
@@ -198,14 +194,16 @@ public abstract class Entity : BattleObserver, IRunner
 
         var oldHp = Hp;
         Hp = Math.Clamp(Hp + amount, 0, MaxHp.Eval);
-
         var delta = oldHp - Hp;
+
         if (delta == 0) return;
 
         Battle.Broadcast(o => o.HpChanged(this, delta));
+
+        if (Hp > 0) return;
         
-        if (Hp == 0)
-            Battle.Broadcast(o => o.HpZeroed(this));
+        HpZeroed();
+        Battle.Broadcast(o => o.HpZeroed(this));
     }
 
     public void RegenerateBoosted(double amount) => ChangeEnergy(amount * EnergyRegenerationRate.Eval);
@@ -215,6 +213,7 @@ public abstract class Entity : BattleObserver, IRunner
 
     private void ChangeEnergy(double amount)
     {
+        if (MaxEnergy is null) return;
         if (amount == 0) return;
 
         var oldEnergy = Energy;
@@ -224,5 +223,12 @@ public abstract class Entity : BattleObserver, IRunner
         if (delta == 0) return;
 
         Battle.Broadcast(o => o.EnergyChanged(this, delta));
+    }
+    
+    protected readonly Battle Battle;
+    
+    protected Entity(Battle battle)
+    {
+        Battle = battle;
     }
 }

@@ -4,7 +4,7 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Environment.WeaknessBreakEffects;
 
-public class WindShear : WeaknessBreakEffect
+public class WindShear : WeaknessBreakEffectTimed
 {
     public int StackCount;
 

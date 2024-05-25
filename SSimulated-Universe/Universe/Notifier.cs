@@ -1,25 +1,18 @@
-﻿using SSimulated_Universe.Entities;
-
-namespace SSimulated_Universe.Universe;
+﻿namespace SSimulated_Universe.Universe;
 
 public class Notifier
 {
-    private readonly Func<IEnumerable<BattleObserver>> GetObservers;
+    private readonly Func<IEnumerable<BattleObserver>> _getObservers;
 
     public Notifier(Func<IEnumerable<BattleObserver>> getObservers)
     {
-        GetObservers = getObservers;
+        _getObservers = getObservers;
     }
 
     public void Broadcast(Action<BattleObserver> notify)
     {
-        foreach (var observer in GetObservers()) 
-            notify(observer);
-    }
-
-    public void Broadcast(Entity excluded, Action<BattleObserver> notify)
-    {
-        foreach (var observer in GetObservers().Where(o => o != excluded)) 
+        var observers = _getObservers().ToList();
+        foreach (var observer in observers) 
             notify(observer);
     }
 }

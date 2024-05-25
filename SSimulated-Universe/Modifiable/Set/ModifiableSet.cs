@@ -2,7 +2,7 @@ namespace SSimulated_Universe.Modifiable.Set;
 
 public class ModifiableSet<T>
 {
-    public readonly HashSet<T> Base;
+    public HashSet<T> Base;
 
     public HashSet<T> Eval => _evaluate();
     

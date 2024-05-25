@@ -3,13 +3,9 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Environment.WeaknessBreakEffects;
 
-public class Bleed : WeaknessBreakEffect
+public class Bleed : WeaknessBreakEffectTimed
 {
-    public Bleed(Entity giver, Entity target, uint duration, Battle battle)
-        : base(giver, target, duration, battle) { }
-
-    public Bleed(Entity giver, Entity target, Battle battle)
-        : base(giver, target, 2, battle) { }
+    public Bleed(Entity giver, Entity target, Battle battle) : base(giver, target, 2, battle) { }
 
     protected override double BaseDamage
     {

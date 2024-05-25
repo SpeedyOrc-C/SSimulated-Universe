@@ -4,14 +4,13 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Environment.WeaknessBreakEffects;
 
-public class Entanglement : WeaknessBreakEffect
+public class Entanglement : WeaknessBreakEffectTimed
 {
-    public static readonly int MaxStackCount = 5;
-    
+    private const int MaxStackCount = 5;
+
     public int StackCount = 1;
 
-    public Entanglement(Entity giver, Entity target, uint? duration, Battle battle)
-        : base(giver, target, duration, battle) { }
+    public Entanglement(Entity giver, Entity target, Battle battle) : base(giver, target, 1, battle) { }
     
     protected override double BaseDamage =>
         0.6 * StackCount * Giver.LevelMultiplier * Target.MaxToughnessMultiplier;

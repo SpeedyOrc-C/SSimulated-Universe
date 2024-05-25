@@ -14,14 +14,20 @@ public abstract class Enemy : Entity
     /// All enemy will die by default.
     /// Override it to allow exceptions like resurrection. 
     /// </summary>
-    public override void HpZeroed(Entity entity)
+    protected override void HpZeroed()
     {
-        if (entity != this) return;
-
-        if (entity.LastDamageSource is null)
+        if (LastDamageSource is null)
             throw new Exception("Cannot find out why this enemy died.");
         
         Battle.Broadcast(o => o.Died(this));
         Battle.Remove(this);
     }
+}
+
+public class EnemyIdle : Enemy
+{
+    public EnemyIdle(Battle battle) : base(battle) { }
+    public override void YourTurn() { }
+    protected override void CleanUp()
+    { }
 }

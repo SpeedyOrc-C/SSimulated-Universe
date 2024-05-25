@@ -14,10 +14,10 @@ public abstract class Player : Entity
     protected int _levelUltimate = 1;
     protected int _levelSkill = 1;
 
-    public abstract int EidolonBasicAttackAdd1 { get; }
-    public abstract int EidolonSkillAdd2 { get; }
-    public abstract int EidolonUltimateAdd2 { get; }
-    public abstract int EidolonTalentAdd2 { get; }
+    protected abstract int EidolonBasicAttackAdd1 { get; }
+    protected abstract int EidolonSkillAdd2 { get; }
+    protected abstract int EidolonUltimateAdd2 { get; }
+    protected abstract int EidolonTalentAdd2 { get; }
     
     public int LevelBasicAttack
     {
@@ -67,4 +67,6 @@ public abstract class Player : Entity
     
     public double LevelTalentMap(double minValue, double maxValue)
         => SMath.LinearMap(LevelTalent, 1, 12, minValue, maxValue);
+
+    protected override void HpZeroed() { }
 }

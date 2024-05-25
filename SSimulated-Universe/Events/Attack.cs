@@ -93,9 +93,6 @@ public static class Attack
 {
     public static readonly IReadOnlyList<double> One = new List<double> { 1 };
     
-    // IEnumerable<KeyValuePair<Entity, IEnumerable<Hit>>>
-    // [(Entity, [Hit])]
-    
     /// <summary>
     /// A single attack may consist of multiple hits.
     /// Each hit's damage is a proportion of the total damage.

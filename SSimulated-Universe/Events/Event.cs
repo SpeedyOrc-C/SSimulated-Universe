@@ -4,12 +4,12 @@ namespace SSimulated_Universe.Events;
 
 public abstract class Event
 {
-    protected Battle Battle;
+    public abstract void Run();
+    
+    protected readonly Battle Battle;
 
     protected Event(Battle battle)
     {
         Battle = battle;
     }
-
-    public abstract void Run();
 }

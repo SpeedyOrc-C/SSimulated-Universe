@@ -3,7 +3,7 @@ namespace SSimulated_Universe.Entities;
 /// <summary>
 /// Magic numbers for damage calculation of Break DMG, DoT, and Super Break DMG.
 /// </summary>
-public sealed class LevelMultiplier
+public static class LevelMultiplier
 {
     /// <summary>
     /// Map entity's level to its magic number.
@@ -31,6 +31,6 @@ public sealed class LevelMultiplier
         { 61, 1752.3215 }, { 62, 1861.9011 }, { 63, 1969.1242 }, { 64, 2074.0659 }, { 65, 2176.7983 },
         { 66, 2277.3904 }, { 67, 2375.9085 }, { 68, 2472.4160 }, { 69, 2566.9739 }, { 70, 2659.6406 },
         { 71, 2780.3044 }, { 72, 2898.6022 }, { 73, 3014.6029 }, { 74, 3128.3729 }, { 75, 3239.9758 },
-        { 76, 3349.4730 }, { 77, 3456.9236 }, { 78, 3562.3843 }, { 79, 3665.9099 }, { 80, 3767.5533 },
+        { 76, 3349.4730 }, { 77, 3456.9236 }, { 78, 3562.3843 }, { 79, 3665.9099 }, { 80, 3767.5533 }
     };
 }

@@ -17,8 +17,8 @@ public class BattleObserver
     /// This does not mean it has died.
     /// </summary>
     public virtual void EntityLeft(Entity entity) { }
-    public virtual void EffectStarted(Effect effect) { }
-    public virtual void EffectEnded(Effect effect) { }
+    public virtual void EffectStarted(Effect effectTimed) { }
+    public virtual void EffectEnded(Effect effectTimed) { }
     
     public virtual void BeforeTurnOf(Entity entity) { }
     
@@ -58,4 +58,48 @@ public class BattleObserver
     /// </summary>
     public virtual void HpZeroed(Entity entity) { }
     public virtual void Died(Entity entity) { }
+}
+
+public class VerboseObserver : Effect
+{
+    public override void EntityJoined(Entity entity) => 
+        Console.WriteLine("EntityJoined");
+    public override void EntityLeft(Entity entity) => 
+        Console.WriteLine("EntityLeft");
+    public override void EffectStarted(Effect effectTimed) => 
+        Console.WriteLine("EffectStarted");
+    public override void EffectEnded(Effect effectTimed) => 
+        Console.WriteLine("EffectEnded");
+    public override void BeforeTurnOf(Entity entity) => 
+        Console.WriteLine("BeforeTurnOf");
+    public override void BeforeTakeAttack(Entity attacker, Entity target) => 
+        Console.WriteLine("BeforeTakeAttack");
+    public override void BeforeTakeHit(Entity attacker, Entity target) => 
+        Console.WriteLine("BeforeTakeHit");
+    public override void AfterTakeHit(Entity attacker, Entity target) => 
+        Console.WriteLine("AfterTakeHit");
+    public override void AfterTakeAttack(Entity attacker, Entity target) => 
+        Console.WriteLine("AfterTakeAttack");
+    public override void UnleashedBasicAttack(Entity subject) => 
+        Console.WriteLine("UnleashedBasicAttack");
+    public override void UnleashedSkill(Entity subject) => 
+        Console.WriteLine("UnleashedSkill");
+    public override void UnleashedUltimate(Entity subject) => 
+        Console.WriteLine("UnleashedUltimate");
+    public override void UnleashedFollowUp(Entity subject) => 
+        Console.WriteLine("UnleashedFollowUp");
+    public override void WeaknessBroken(Entity entity) => 
+        Console.WriteLine("WeaknessBroken");
+    public override void SkillPointChanged(Side side, int delta) => 
+        Console.WriteLine("SkillPointChanged");
+    public override void EnergyChanged(Entity entity, double delta) => 
+        Console.WriteLine("EnergyChanged");
+    public override void HpChanged(Entity entity, double delta) => 
+        Console.WriteLine("HpChanged " + delta);
+    public override void HpZeroed(Entity entity) => 
+        Console.WriteLine("HpZeroed");
+    public override void Died(Entity entity) => 
+        Console.WriteLine("Died");
+    
+    public VerboseObserver(Battle battle) : base(battle) { }
 }

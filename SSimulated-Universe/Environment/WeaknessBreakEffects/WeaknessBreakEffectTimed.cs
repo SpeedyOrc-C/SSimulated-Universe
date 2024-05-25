@@ -4,13 +4,13 @@ using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe.Environment.WeaknessBreakEffects;
 
-public abstract class WeaknessBreakEffect : Effect
+public abstract class WeaknessBreakEffectTimed : EffectTimed
 {
     public readonly Entity Giver;
     public readonly Entity Target;
     
-    protected WeaknessBreakEffect(Entity giver, Entity target, uint? duration, Battle battle)
-        : base(battle, duration)
+    protected WeaknessBreakEffectTimed(Entity giver, Entity target, uint duration, Battle battle)
+        : base(duration, battle)
     {
         Giver = giver;
         Target = target;
