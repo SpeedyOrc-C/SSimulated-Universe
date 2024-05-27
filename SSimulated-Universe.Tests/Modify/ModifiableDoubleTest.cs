@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SSimulated_Universe.Modifiable.Number;
+using SSimulated_Universe.Utility.Modifiable.Number;
 
 namespace SSimulated_Universe.Tests.Modify;
 

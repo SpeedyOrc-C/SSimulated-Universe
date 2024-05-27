@@ -1,7 +1,3 @@
-using SSimulated_Universe.Entities;
-using SSimulated_Universe.Environment;
-using SSimulated_Universe.Events;
-
 namespace SSimulated_Universe.Universe;
 
 public class Battle
@@ -40,10 +36,13 @@ public class Battle
         nextEntity.YourTurn();
     }
 
-    public void Add(Effect effectTimed)
+    public void Add(Effect effect)
     {
-        _effects.Add(effectTimed);
-        Broadcast(o => o.EffectStarted(effectTimed));
+        _effects.Add(effect);
+
+        effect.Added();
+
+        Broadcast(o => o.EffectStarted(effect));
     }
 
     public void Remove(Entity entity)
@@ -56,13 +55,14 @@ public class Battle
             throw new Exception("This entity doesn't exist.");
     }
 
-    public void Remove(EffectTimed effectTimed)
+    public void Remove(Effect effect)
     {
-        if (!_effects.Remove(effectTimed))
+        if (!_effects.Remove(effect))
             throw new Exception("This effect doesn't exist.");
 
-        effectTimed.CleanUp();
-        Broadcast(o => o.EffectEnded(effectTimed));
+        effect.Removed();
+
+        Broadcast(o => o.EffectEnded(effect));
     }
 
     public void Broadcast(Action<BattleObserver> notify) => _notifier.Broadcast(notify);

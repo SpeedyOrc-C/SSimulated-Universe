@@ -10,7 +10,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Entities\Enemies\" />
+      <Folder Include="LightCones\" />
+      <Folder Include="Relics\" />
     </ItemGroup>
 
 </Project>

@@ -1,7 +1,4 @@
-﻿using SSimulated_Universe.Entities;
-using SSimulated_Universe.Entities.Players;
-using SSimulated_Universe.Events;
-using SSimulated_Universe.Universe;
+﻿using SSimulated_Universe.Universe;
 
 namespace SSimulated_Universe;
 
@@ -9,33 +6,19 @@ internal class MainProgram
 {
     public static void Main()
     {
-        var battle = new Battle();
-        
-        var me = new TrailblazerDestruction(battle)
-        {
-            Level = 80,
-            MaxHp = { Base = 4185 },
-            Attack = { Base = 3255 },
-            Defence = { Base = 1174 }
-        };
-        me.Reset();
+        var r = new Feet(
+            Stat.AttackP,
+            15,
+            new HashSet<SubStat>
+            {
+                new(Stat.Speed, 2),
+                new(Stat.CriticalRate, 0.071),
+                new(Stat.CriticalDamage, 0.181),
+                new(Stat.EffectHitRate, 0.082),
+            },
+            RelicRarity.R5
+        );
 
-        var you = new EnemyIdle(battle) { Level = 90, MaxToughness = 100};
-        you.Weaknesses.Base.Add(DamageType.Physical);
-        you.MaxHp.Base = 10000;
-        you.Reset();
-
-        var observer = new VerboseObserver(battle);
-        
-        battle.Left.Append(me);
-        battle.Right.Append(you);
-        battle.Add(observer);
-
-        var farewellHit = new FarewellHit(me, you, battle);
-        farewellHit.Run();
-        farewellHit.Run();
-        farewellHit.Run();
-        farewellHit.Run();
-        farewellHit.Run();
+        return;
     }
 }

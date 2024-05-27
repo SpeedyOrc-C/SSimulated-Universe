@@ -1,5 +1,4 @@
-using SSimulated_Universe.Entities;
-using SSimulated_Universe.Modifiable.Number;
+using SSimulated_Universe.Utility.Modifiable.Number;
 
 namespace SSimulated_Universe.Universe;
 
@@ -39,8 +38,11 @@ public class Side
         return _entities[index + 1];
     }
 
-    public Entity PickRandomEntity()
+    public Entity ChooseRandom()
     {
+        if (_entities.Count == 0)
+            throw new Exception("No entity to pick.");
+
         var index = (int) (Random.Shared.NextInt64() % _entities.Count);
         return _entities[index];
     }
