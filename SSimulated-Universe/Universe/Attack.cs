@@ -2,7 +2,7 @@
 global using TargetsHits = 
     System.Collections.Generic.IEnumerable
         <System.Collections.Generic.KeyValuePair
-            < SSimulated_Universe.Universe.Enemy
+            < SSimulated_Universe.Universe.Entity
             , System.Collections.Generic.IEnumerable<SSimulated_Universe.Universe.Hit>>>;
 using SSimulated_Universe.Utility;
 
@@ -73,7 +73,7 @@ public record BaseDamage
     public double BaseDefence = 0;
     public double WeaknessBreak = 0;
 
-    public double By(Player attacker) =>
+    public double By(Entity attacker) =>
           Base
         + BaseHp * attacker.MaxHp.Eval
         + BaseAttack * attacker.Attack.Eval
@@ -82,7 +82,7 @@ public record BaseDamage
 }
 
 public record Hit(
-    Player Attacker,
+    Entity Attacker,
     double Damage,
     DamageType DamageType,
     double ToughnessDepletion,
@@ -102,8 +102,8 @@ public static class Attack
     /// </summary>
     /// <returns>Split damages</returns>
     public static TargetsHits SingleTarget(
-        Player attacker,
-        Enemy target,
+        Entity attacker,
+        Entity target,
         DamageMethod damageMethod,
         IReadOnlyList<double> hitSplit,
         BaseDamage baseDamage)
@@ -154,14 +154,14 @@ public static class Attack
                         DamageMethod: damageMethod);
                 });
         
-        return new Dictionary<Enemy, IEnumerable<Hit>> { {target, splitDamages} };
+        return new Dictionary<Entity, IEnumerable<Hit>> { {target, splitDamages} };
 
 
     }
     
     public static TargetsHits Blast(
-        Player attacker,
-        Enemy target,
+        Entity attacker,
+        Entity target,
         Battle battle,
         DamageMethod damageMethod,
         IReadOnlyList<double> hitSplit,
@@ -171,8 +171,8 @@ public static class Attack
     {
         var targetSide = battle.SideOf(target);
 
-        var targetLeft = targetSide.FindLeft(target) as Enemy;
-        var targetRight = targetSide.FindRight(target) as Enemy;
+        var targetLeft = targetSide.FindLeft(target);
+        var targetRight = targetSide.FindRight(target);
         
         var hits = 
             SingleTarget(attacker, target, damageMethod, hitSplit, baseDamage);
@@ -180,19 +180,19 @@ public static class Attack
         var hitsLeft =
             targetLeft is not null
                 ? SingleTarget(attacker, targetLeft, damageMethod, hitSplitAdjacent, baseDamageAdjacent)
-                : new Dictionary<Enemy, IEnumerable<Hit>>();
+                : new Dictionary<Entity, IEnumerable<Hit>>();
 
         var hitsRight =
             targetRight is not null
                 ? SingleTarget(attacker, targetRight, damageMethod, hitSplitAdjacent, baseDamageAdjacent)
-                : new Dictionary<Enemy, IEnumerable<Hit>>();
+                : new Dictionary<Entity, IEnumerable<Hit>>();
         
         return hits.Union(hitsLeft).Union(hitsRight);
     }
 
     public static TargetsHits Bounce(
-        Player attacker,
-        Enemy targetFirst,
+        Entity attacker,
+        Entity targetFirst,
         Battle battle,
         DamageMethod damageMethod,
         int bounces,
@@ -206,13 +206,10 @@ public static class Attack
         
         var hitsHead = SingleTarget(attacker, targetFirst, damageMethod, hitSplit, baseDamage);
 
-        TargetsHits hitsTail = new Dictionary<Enemy, IEnumerable<Hit>>();
+        TargetsHits hitsTail = new Dictionary<Entity, IEnumerable<Hit>>();
         for (var i = 1; i <= bounces - 1; i += 1)
         {
-            if (targetSide.ChooseRandom() is not Enemy chosenEnemy)
-                throw new Exception("Target is not an enemy.");
-
-            var hits = SingleTarget(attacker, chosenEnemy, damageMethod, hitSplit, baseDamage);
+            var hits = SingleTarget(attacker, targetSide.ChooseRandom(), damageMethod, hitSplit, baseDamage);
             hitsTail = hitsTail.Union(hits);
         }
 
@@ -220,19 +217,13 @@ public static class Attack
     }
     
     public static TargetsHits AoE(
-        Player attacker,
+        Entity attacker,
         Side targetSide,
         DamageMethod damageMethod,
         List<double> hitSplit,
         BaseDamage baseDamage)
     =>
         targetSide.Entities
-            .Select(target =>
-            {
-                if (target is not Enemy enemy)
-                    throw new Exception("Target is not an enemy");
-
-                return SingleTarget(attacker, enemy, damageMethod, hitSplit, baseDamage);
-            })
+            .Select(target => SingleTarget(attacker, target, damageMethod, hitSplit, baseDamage))
             .SelectMany(x => x);
 }
