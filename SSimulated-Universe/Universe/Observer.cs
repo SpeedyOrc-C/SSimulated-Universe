@@ -35,16 +35,11 @@ public class BattleObserver
      *             ......        │
      *     AfterTakeAttack   ────┘
      */
-    public virtual void BeforeTakeAttack(Entity attacker, Entity target) { }
-    public virtual void BeforeTakeHit(Entity attacker, Entity target) { }
-    public virtual void AfterTakeHit(Entity attacker, Entity target) { }
-    public virtual void AfterTakeAttack(Entity attacker, Entity target) { }
-    
-    public virtual void UnleashedBasicAttack(Entity subject) { }
-    public virtual void UnleashedSkill(Entity subject) { }
-    public virtual void UnleashedUltimate(Entity subject) { }
-    public virtual void UnleashedFollowUp(Entity subject) { }
-    
+    public virtual void BeforeAction(Entity subject, ActionType actionType) { }
+    public virtual void BeforeTakeHit(Entity attacker, Hit hit, Entity target) { }
+    public virtual void AfterTakeHit(Entity attacker, Hit hit, Entity target) { }
+    public virtual void AfterAction(Entity subject, ActionType actionType) { }
+
     public virtual void WeaknessBroken(Entity entity) { }
     public virtual void SkillPointChanged(Side side, int delta) { }
     public virtual void EnergyChanged(Entity entity, double delta) { }
@@ -69,22 +64,14 @@ public class VerboseObserver : Effect
         Console.WriteLine("EffectEnded");
     public override void BeforeTurnOf(Entity entity) => 
         Console.WriteLine("BeforeTurnOf");
-    public override void BeforeTakeAttack(Entity attacker, Entity target) => 
-        Console.WriteLine("BeforeTakeAttack");
-    public override void BeforeTakeHit(Entity attacker, Entity target) => 
+    public override void BeforeTakeHit(Entity attacker, Hit hit, Entity target) => 
         Console.WriteLine("BeforeTakeHit");
-    public override void AfterTakeHit(Entity attacker, Entity target) => 
+    public override void AfterTakeHit(Entity attacker, Hit hit, Entity target) => 
         Console.WriteLine("AfterTakeHit");
-    public override void AfterTakeAttack(Entity attacker, Entity target) => 
-        Console.WriteLine("AfterTakeAttack");
-    public override void UnleashedBasicAttack(Entity subject) => 
-        Console.WriteLine("UnleashedBasicAttack");
-    public override void UnleashedSkill(Entity subject) => 
-        Console.WriteLine("UnleashedSkill");
-    public override void UnleashedUltimate(Entity subject) => 
-        Console.WriteLine("UnleashedUltimate");
-    public override void UnleashedFollowUp(Entity subject) => 
-        Console.WriteLine("UnleashedFollowUp");
+    public override void BeforeAction(Entity subject, ActionType actionType) => 
+        Console.WriteLine("BeforeAction " + actionType);
+    public override void AfterAction(Entity subject, ActionType actionType) => 
+        Console.WriteLine("AfterAction" + actionType);
     public override void WeaknessBroken(Entity entity) => 
         Console.WriteLine("WeaknessBroken");
     public override void SkillPointChanged(Side side, int delta) => 

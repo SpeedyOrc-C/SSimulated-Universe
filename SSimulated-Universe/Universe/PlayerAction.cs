@@ -4,6 +4,8 @@ public abstract class PlayerAction<P> : Event where P : Player
 {
     protected readonly P Subject;
 
+    public abstract void Action();
+
     protected PlayerAction(P subject, Battle battle) : base(battle) => Subject = subject;
 }
 
@@ -14,7 +16,10 @@ public abstract class BasicAttack<P> : PlayerAction<P> where P : Player
     public override void Run()
     {
         Battle.SideOf(Subject).ChangeSkillPoint(1);
-        Battle.Broadcast(o => o.UnleashedBasicAttack(Subject));
+        
+        Battle.Broadcast(o => o.BeforeAction(Subject, ActionType.BasicAttack));
+        Action();
+        Battle.Broadcast(o => o.AfterAction(Subject, ActionType.BasicAttack));
     }
 }
 
@@ -27,7 +32,9 @@ public abstract class Skill<P> : PlayerAction<P> where P : Player
         if (!Battle.SideOf(Subject).UseSkillPoint(1))
             throw new Exception("No enough skill point.");
 
-        Battle.Broadcast(o => o.UnleashedSkill(Subject));
+        Battle.Broadcast(o => o.BeforeAction(Subject, ActionType.Skill));
+        Action();
+        Battle.Broadcast(o => o.AfterAction(Subject, ActionType.Skill));
     }
 }
 
@@ -42,7 +49,10 @@ public abstract class Ultimate<P> : PlayerAction<P> where P : Player
     {
         Subject.Discharge();
         Subject.RegenerateBoosted(5);
-        Battle.Broadcast(o => o.UnleashedUltimate(Subject));
+        
+        Battle.Broadcast(o => o.BeforeAction(Subject, ActionType.Ultimate));
+        Action();
+        Battle.Broadcast(o => o.AfterAction(Subject, ActionType.Ultimate));
     }
 }
 
@@ -52,6 +62,8 @@ public abstract class FollowUp<P> : PlayerAction<P> where P : Player
 
     public override void Run()
     {
-        Battle.Broadcast(o => o.UnleashedFollowUp(Subject));
+        Battle.Broadcast(o => o.BeforeAction(Subject, ActionType.FollowUp));
+        Action();
+        Battle.Broadcast(o => o.AfterAction(Subject, ActionType.FollowUp));
     }
 }

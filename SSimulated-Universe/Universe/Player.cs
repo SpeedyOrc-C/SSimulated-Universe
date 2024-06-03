@@ -44,12 +44,12 @@ public abstract class Player : Entity
 
     public override void TakeHit(Hit hit)
     {
-        Battle.Broadcast(o => o.BeforeTakeHit(hit.Attacker, this));
+        Battle.Broadcast(o => o.BeforeTakeHit(hit.Attacker, hit, this));
 
-        LastDamageSource = new DamageFromEntity(hit.Attacker, hit.DamageMethod);
+        LastDamageSource = new DamageFromEntity(hit.Attacker, hit.ActionType);
         TakeDamage(hit.Damage);
 
-        Battle.Broadcast(o => o.AfterTakeHit(hit.Attacker, this));
+        Battle.Broadcast(o => o.AfterTakeHit(hit.Attacker, hit, this));
     }
 
     public Player(

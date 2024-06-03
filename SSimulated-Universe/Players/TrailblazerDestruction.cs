@@ -14,16 +14,14 @@ public class FarewellHit : BasicAttack<TrailblazerDestruction>
         _target = target;
     }
 
-    public override void Run()
+    public override void Action()
     {
-        base.Run();
-
         Subject.RegenerateBoosted(20);
 
         var targetsHits = Attack.SingleTarget(
             attacker: Subject,
             target: _target,
-            damageMethod: DamageMethod.BasicAttack,
+            actionType: ActionType.BasicAttack,
             hitSplit: Attack.One,
             baseDamage: new BaseDamage
             {
@@ -47,16 +45,14 @@ public class RipHomeRun : Skill<TrailblazerDestruction>
         _target = target;
     }
 
-    public override void Run()
+    public override void Action()
     {
-        base.Run();
-
         Subject.RegenerateBoosted(30);
 
         var targetsHits = Attack.Blast(
             attacker: Subject,
             target: _target,
-            damageMethod: DamageMethod.Skill,
+            actionType: ActionType.Skill,
             battle: Battle,
             hitSplit: Attack.One,
             baseDamage: new BaseDamage
@@ -99,14 +95,12 @@ public class StardustAceBlowoutFarewellHit : Ultimate<TrailblazerDestruction>
         _target = target;
     }
 
-    public override void Run()
+    public override void Action()
     {
-        base.Run();
-
         var hits = Attack.SingleTarget(
             attacker: Subject,
             target: _target,
-            damageMethod: DamageMethod.Ultimate,
+            actionType: ActionType.Ultimate,
             hitSplit: Attack.One,
             baseDamage: new BaseDamage
             {
@@ -131,14 +125,12 @@ public class StardustAceBlowoutRipHomeRun : Ultimate<TrailblazerDestruction>
         _target = target;
     }
 
-    public override void Run()
+    public override void Action()
     {
-        base.Run();
-
         var targetsHits = Attack.Blast(
             attacker: Subject,
             target: _target,
-            damageMethod: DamageMethod.Ultimate,
+            actionType: ActionType.Ultimate,
             battle: Battle,
             hitSplit: Attack.One,
             baseDamage: new BaseDamage
@@ -171,20 +163,20 @@ public class StardustAceBlowoutRipHomeRun : Ultimate<TrailblazerDestruction>
     }
 }
 
-public abstract class TrailblazerDestruction : Player
+public class TrailblazerDestruction : Player
 {
-    protected static readonly ModifierDoubleImmediate Add20P = new(0.2);
-    protected bool AFallingStarTriggered;
+    private static readonly ModifierDoubleImmediate Add20P = new(0.2);
+    private bool AFallingStarTriggered;
 
     // Talent
-    protected const int MaxStackCount = 2;
-    protected int PerfectPickOffStackCount;
-    protected readonly ModifierDoubleImmediate PerfectPickOffAttackModifier = new(0);
-    protected readonly ModifierDoubleImmediate PerfectPickOffDefenceModifier = new(0);
+    private const int MaxStackCount = 2;
+    private int PerfectPickOffStackCount;
+    private readonly ModifierDoubleImmediate PerfectPickOffAttackModifier = new(0);
+    private readonly ModifierDoubleImmediate PerfectPickOffDefenceModifier = new(0);
 
     // Extra abilities
-    protected bool ReadyForBattle = false;
-    protected bool Perseverance = false;
+    private bool ReadyForBattle = false;
+    private bool Perseverance = false;
     public bool FightingWill = false;
 
     public override int EidolonSkillAdd2 => 3;
@@ -264,6 +256,11 @@ public abstract class TrailblazerDestruction : Player
 
         PerfectPickOffAttackModifier.Value = LevelTalentMap(0.1, 0.22) * PerfectPickOffStackCount;
         PerfectPickOffDefenceModifier.Value = 0.1 * PerfectPickOffStackCount;
+    }
+
+    public override void YourTurn()
+    {
+        
     }
 
     protected override void CleanUp()

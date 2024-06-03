@@ -109,7 +109,7 @@ public class Entanglement : EffectWeaknessBreak
     protected override double BaseDamage =>
         0.6 * _stackCount * Player.LevelMultiplier * Enemy.MaxToughnessMultiplier;
 
-    public override void AfterTakeAttack(Entity attacker, Entity target)
+    public virtual void AfterTakeAttack(Entity attacker, Entity target)
     {
         if (target != Enemy) return;
         if (_stackCount == MaxStackCount) return;

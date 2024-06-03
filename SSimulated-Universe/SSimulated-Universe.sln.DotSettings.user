@@ -7,11 +7,11 @@
 	
 	<s:String x:Key="/Default/Environment/UnitTesting/CreateUnitTestDialog/TestProjectMapping/=46A66253_002D0C3C_002D4D37_002D8A96_002D030D8DDA1C0F/@EntryIndexedValue">ADB9959F-6AFD-4259-9D14-9A7292E020A5</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/CreateUnitTestDialog/TestTemplateMapping/=MSTest/@EntryIndexedValue">d6790ab7-33c2-4425-b2c9-51480cd1a852</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=0438f45f_002D1d8a_002D4790_002Db457_002D2b1290741870/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="METHOD" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;MSTest::ADB9959F-6AFD-4259-9D14-9A7292E020A5::net7.0::SSimulated_Universe.Tests.Modify.ModifiableDoubleTest&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::ADB9959F-6AFD-4259-9D14-9A7292E020A5::net7.0::SSimulated_Universe.Tests.Schedule.SchedulerTest.Normal&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::ADB9959F-6AFD-4259-9D14-9A7292E020A5::net7.0::SSimulated_Universe.Tests.Schedule.SchedulerTest&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::ADB9959F-6AFD-4259-9D14-9A7292E020A5::net7.0::SSimulated_Universe.Tests.Modify.ModifiableIntTest&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=0438f45f_002D1d8a_002D4790_002Db457_002D2b1290741870/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="METHOD" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;MSTest::ADB9959F-6AFD-4259-9D14-9A7292E020A5::net7.0::SSimulated_Universe.Tests.Modify.ModifiableDoubleTest&lt;/TestId&gt;
+    &lt;TestId&gt;MSTest::ADB9959F-6AFD-4259-9D14-9A7292E020A5::net7.0::SSimulated_Universe.Tests.Schedule.SchedulerTest.Normal&lt;/TestId&gt;
+    &lt;TestId&gt;MSTest::ADB9959F-6AFD-4259-9D14-9A7292E020A5::net7.0::SSimulated_Universe.Tests.Schedule.SchedulerTest&lt;/TestId&gt;
+    &lt;TestId&gt;MSTest::ADB9959F-6AFD-4259-9D14-9A7292E020A5::net7.0::SSimulated_Universe.Tests.Modify.ModifiableIntTest&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

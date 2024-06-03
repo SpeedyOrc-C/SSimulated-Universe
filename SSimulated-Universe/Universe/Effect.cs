@@ -51,16 +51,35 @@ public abstract class EffectTimed : Effect
     protected EffectTimed(uint duration, Battle battle) : base(battle) => _duration = duration;
 }
 
-public abstract class EffectSelf<TSelf> : Effect
+public abstract class EffectWithTarget : Effect
 {
-    protected readonly TSelf Self;
+    protected readonly Entity Target;
 
-    protected EffectSelf(TSelf self, Battle battle) : base(battle) => Self = self;
+    protected EffectWithTarget(Entity target, Battle battle) : base(battle) => 
+        Target = target;
+
+    protected virtual void BeforeActionOfTarget(ActionType actionType) { }
+    protected virtual void AfterActionOfTarget(ActionType actionType) { }
+
+    public sealed override void BeforeAction(Entity subject, ActionType actionType)
+    {
+        if (subject != Target) return;
+        
+        BeforeActionOfTarget(actionType);
+    }
+
+    public sealed override void AfterAction(Entity subject, ActionType actionType)
+    {
+        if (subject != Target) return;
+        
+        AfterActionOfTarget(actionType);
+    }
 }
 
-public abstract class EffectTimedSelf<TSelf> : EffectTimed where TSelf : Entity
+public abstract class EffectTimedWithTarget : EffectTimed
 {
-    protected readonly TSelf Self;
+    protected readonly Entity Target;
 
-    protected EffectTimedSelf(TSelf self, Battle battle, uint duration) : base(duration, battle) => Self = self;
+    protected EffectTimedWithTarget(Entity target, uint duration, Battle battle) : base(duration, battle) => 
+        Target = target;
 }
