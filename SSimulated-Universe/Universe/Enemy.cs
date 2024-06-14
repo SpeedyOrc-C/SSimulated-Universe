@@ -6,9 +6,9 @@ public abstract class Enemy : Entity
 {
     public override void TakeHit(Hit hit)
     {
-        Battle.Broadcast(o => o.BeforeTakeHit(hit.Attacker, hit, this));
+        Battle.Broadcast(o => o.BeforeTakeHit(hit, this));
 
-        LastDamageSource = new DamageFromEntity(hit.Attacker, hit.ActionType);
+        LastDamageSource = new DamageFromEntity(hit.Sender);
         TakeDamage(hit.Damage);
 
         var isDepletingToughness =
@@ -29,11 +29,11 @@ public abstract class Enemy : Entity
                 for (var i = 1; i <= brokenGaugesCount; i += 1)
                     TakeBreakDamage();
 
-            if (hit.Attacker.SuperBreakDamageEnabled && Toughness == 0)
+            if (hit.Sender.SuperBreakDamageEnabled && Toughness == 0)
                 TakeSuperBreakDamage();
         }
 
-        Battle.Broadcast(o => o.AfterTakeHit(hit.Attacker, hit, this));
+        Battle.Broadcast(o => o.AfterTakeHit(hit, this));
         return;
 
         void TakeBreakDamage()
@@ -41,7 +41,7 @@ public abstract class Enemy : Entity
             Battle.Broadcast(o => o.WeaknessBroken(this));
 
             var breakBaseDamage
-                = hit.Attacker.LevelMultiplier
+                = hit.Sender.LevelMultiplier
                 * MaxToughnessMultiplier
                 * hit.DamageType switch
                 {
@@ -58,25 +58,25 @@ public abstract class Enemy : Entity
             var breakDamage
                 = breakBaseDamage
                 * (1 + BreakEffect.Eval)
-                * hit.Attacker.DefenceMultiplier(this)
-                * hit.Attacker.ResistanceMultiplier(this, hit.DamageType)
+                * hit.Sender.DefenceMultiplier(this)
+                * hit.Sender.ResistanceMultiplier(this, hit.DamageType)
                 * VulnerabilityMultiplier(hit.DamageType)
                 * BrokenMultiplier
                 ;
 
             TakeDamage(breakDamage);
 
-            if (!DebuffInflictionTrial(EffectWeaknessBreak.BaseProbability, hit.Attacker)) return;
+            if (!DebuffInflictionTrial(EffectWeaknessBreak.BaseProbability, hit.Sender)) return;
 
             EffectWeaknessBreak debuff = hit.DamageType switch
             {
-                DamageType.Physical  => new Bleed(hit.Attacker, this, Battle),
-                DamageType.Fire      => new Burn(hit.Attacker, this, Battle),
-                DamageType.Ice       => new Freeze(hit.Attacker, this, Battle),
-                DamageType.Lightning => new Shock(hit.Attacker, this, Battle),
-                DamageType.Wind      => new WindShear(hit.Attacker, this, Battle),
-                DamageType.Quantum   => new Entanglement(hit.Attacker, this, Battle),
-                DamageType.Imaginary => new Imprisonment(hit.Attacker, this, Battle),
+                DamageType.Physical  => new Bleed(hit.Sender, this, Battle),
+                DamageType.Fire      => new Burn(hit.Sender, this, Battle),
+                DamageType.Ice       => new Freeze(hit.Sender, this, Battle),
+                DamageType.Lightning => new Shock(hit.Sender, this, Battle),
+                DamageType.Wind      => new WindShear(hit.Sender, this, Battle),
+                DamageType.Quantum   => new Entanglement(hit.Sender, this, Battle),
+                DamageType.Imaginary => new Imprisonment(hit.Sender, this, Battle),
                 _                    => throw new InvalidDamageType()
             };
 
@@ -97,12 +97,12 @@ public abstract class Enemy : Entity
                 };
 
             var superBreakDamage
-                = hit.Attacker.LevelMultiplier
+                = hit.Sender.LevelMultiplier
                 * hit.ToughnessDepletion / 30
                 * (1 + BreakEffect.Eval)
                 * danceWithTheOneMultiplier
-                * hit.Attacker.DefenceMultiplier(this)
-                * hit.Attacker.ResistanceMultiplier(this, hit.DamageType)
+                * hit.Sender.DefenceMultiplier(this)
+                * hit.Sender.ResistanceMultiplier(this, hit.DamageType)
                 * VulnerabilityMultiplier(hit.DamageType)
                 ;
 

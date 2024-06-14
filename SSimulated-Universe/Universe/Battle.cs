@@ -1,11 +1,10 @@
+using System.Collections;
+
 namespace SSimulated_Universe.Universe;
 
 public class Battle
 {
-    public readonly Side Left;
-    public readonly Side Right;
-
-    public IEnumerable<Entity> Entities => Left.Entities.Concat(Right.Entities);
+    public IEnumerable<Entity> Entities => _left.Entities.Concat(_right.Entities);
     
     public void Tick()
     {
@@ -13,13 +12,13 @@ public class Battle
 
         if (_followUps.Count > 0)
         {
-            _followUps.Pop().Run();
+            _followUps.Pop().Execute();
             return;
         }
 
         if (_ultimates.Count > 0)
         {
-            _ultimates.Dequeue().Run();
+            _ultimates.Dequeue().Execute();
             return;
         }
 
@@ -45,11 +44,16 @@ public class Battle
         Broadcast(o => o.EffectStarted(effect));
     }
 
+    public void Add(HitSplitter hitSplitter)
+    {
+        _hitSplitters.Add(hitSplitter);
+    }
+
     public void Remove(Entity entity)
     {
-        if (Left.Remove(entity))
+        if (_left.Remove(entity))
             Broadcast(o => o.EntityLeft(entity));
-        else if (Right.Remove(entity))
+        else if (_right.Remove(entity))
             Broadcast(o => o.EntityLeft(entity));
         else
             throw new Exception("This entity doesn't exist.");
@@ -65,40 +69,74 @@ public class Battle
         Broadcast(o => o.EffectEnded(effect));
     }
 
+    public void Remove(HitSplitter hitSplitter)
+    {
+        _hitSplitters.Remove(hitSplitter);
+    }
+
     public void Broadcast(Action<BattleObserver> notify) => _notifier.Broadcast(notify);
 
     public Side SideOf(Entity entity)
     {
-        if (Left.Contains(entity)) return Left;
-        if (Right.Contains(entity)) return Right;
+        if (_left.Contains(entity)) return _left;
+        if (_right.Contains(entity)) return _right;
         throw new Exception("Cannot find the entity.");
     }
 
     public Side OppositeSideOf(Entity entity)
     {
-        if (Left.Contains(entity)) return Right;
-        if (Right.Contains(entity)) return Left;
+        if (_left.Contains(entity)) return _right;
+        if (_right.Contains(entity)) return _left;
         throw new Exception("Cannot find the entity.");
     }
 
-    public void TriggerFollowUp(Event followUp) => _followUps.Push(followUp);
-    public void UnleashUltimate(Event ultimate) => _ultimates.Enqueue(ultimate);
+    public void Send(Hit hit)
+    {
+        var splitHits =
+            _hitSplitters
+                .Aggregate(new List<Hit> { hit },
+                    (listHit, splitter) => listHit.SelectMany(splitter.Split).ToList());
+
+        foreach (var splitHit in splitHits)
+            splitHit.Sender.TakeHit(splitHit);
+    }
+
+    public void Send(IEnumerable<Hit> hits)
+    {
+        foreach (var hit in hits)
+            hit.Receiver.TakeHit(hit);
+    }
+
+    public void TriggerFollowUp(IEvent followUp) => _followUps.Push(followUp);
+    public void UnleashUltimate(IEvent ultimate) => _ultimates.Enqueue(ultimate);
     public void AddExtraTurn(Entity entity) => _extraTurns.Enqueue(entity);
 
-    private readonly HashSet<Effect> _effects = new();
+    private readonly Side _left;
+    private readonly Side _right;
+    private readonly HashSet<Effect> _effects;
     private readonly Notifier _notifier;
-    private readonly Scheduler<Entity> _scheduler = new();
-    private readonly Stack<Event> _followUps = new();
-    private readonly Queue<Event> _ultimates = new();
-    private readonly Queue<Entity> _extraTurns = new();
+    private readonly Scheduler<Entity> _scheduler;
+    private readonly Stack<IEvent> _followUps;
+    private readonly Queue<IEvent> _ultimates;
+    private readonly Queue<Entity> _extraTurns;
+    private readonly SortedSet<HitSplitter> _hitSplitters;
 
     public Battle()
     {
-        Left = new Side(this);
-        Right = new Side(this);
+        _left = new Side(this);
+        _right = new Side(this);
+
+        _effects = new HashSet<Effect>();
+        _scheduler = new Scheduler<Entity>();
+        _followUps = new Stack<IEvent>();
+        _ultimates = new Queue<IEvent>();
+        _extraTurns = new Queue<Entity>();
+        _hitSplitters = new SortedSet<HitSplitter>(new HitSplitterPriorityComparer());
 
         _notifier = new Notifier(() =>
-            Entities.Select(x => x as BattleObserver).Concat(_effects.Select(x => x as BattleObserver))
+            Entities
+                .Select(x => x as BattleObserver)
+                .Concat(_effects.Select(x => x as BattleObserver))
         );
     }
 }

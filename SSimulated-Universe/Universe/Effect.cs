@@ -58,21 +58,21 @@ public abstract class EffectWithTarget : Effect
     protected EffectWithTarget(Entity target, Battle battle) : base(battle) => 
         Target = target;
 
-    protected virtual void BeforeActionOfTarget(ActionType actionType) { }
-    protected virtual void AfterActionOfTarget(ActionType actionType) { }
+    protected virtual void BeforeActionOfTarget() { }
+    protected virtual void AfterActionOfTarget() { }
 
-    public sealed override void BeforeAction(Entity subject, ActionType actionType)
+    public sealed override void BeforeEvent(IEvent @event)
     {
-        if (subject != Target) return;
+        if (@event.GetSubject != Target) return;
         
-        BeforeActionOfTarget(actionType);
+        BeforeActionOfTarget();
     }
 
-    public sealed override void AfterAction(Entity subject, ActionType actionType)
+    public sealed override void AfterEvent(IEvent @event)
     {
-        if (subject != Target) return;
+        if (@event.GetSubject != Target) return;
         
-        AfterActionOfTarget(actionType);
+        AfterActionOfTarget();
     }
 }
 

@@ -9,6 +9,7 @@ public class ModifiableSet<T>
     private readonly HashSet<ModifierSet<T>> _modifiers = new();
 
     public ModifiableSet(HashSet<T> @base) => Base = @base;
+    public ModifiableSet() => Base = new HashSet<T>();
 
     private HashSet<T> _evaluate()
     {

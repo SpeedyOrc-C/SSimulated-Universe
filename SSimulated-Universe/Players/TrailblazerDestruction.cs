@@ -14,14 +14,15 @@ public class FarewellHit : BasicAttack<TrailblazerDestruction>
         _target = target;
     }
 
-    public override void Action()
+    protected override void ExecuteInner()
     {
+        base.ExecuteInner();
+
         Subject.RegenerateBoosted(20);
 
         var targetsHits = Attack.SingleTarget(
             attacker: Subject,
             target: _target,
-            actionType: ActionType.BasicAttack,
             hitSplit: Attack.One,
             baseDamage: new BaseDamage
             {
@@ -31,7 +32,7 @@ public class FarewellHit : BasicAttack<TrailblazerDestruction>
             }
         );
 
-        Subject.GiveTargetsHits(targetsHits);
+        Subject.Send(targetsHits);
     }
 }
 
@@ -45,14 +46,15 @@ public class RipHomeRun : Skill<TrailblazerDestruction>
         _target = target;
     }
 
-    public override void Action()
+    protected override void ExecuteInner()
     {
+        base.ExecuteInner();
+
         Subject.RegenerateBoosted(30);
 
         var targetsHits = Attack.Blast(
             attacker: Subject,
             target: _target,
-            actionType: ActionType.Skill,
             battle: Battle,
             hitSplit: Attack.One,
             baseDamage: new BaseDamage
@@ -74,13 +76,13 @@ public class RipHomeRun : Skill<TrailblazerDestruction>
         {
             DamageBooster.Modify(Subject.Boost.Physical);
             {
-                Subject.GiveTargetsHits(targetsHits);
+                Subject.Send(targetsHits);
             }
             DamageBooster.Dismiss(Subject.Boost.Physical);
         }
         else
         {
-            Subject.GiveTargetsHits(targetsHits);
+            Subject.Send(targetsHits);
         }
     }
 }
@@ -95,12 +97,13 @@ public class StardustAceBlowoutFarewellHit : Ultimate<TrailblazerDestruction>
         _target = target;
     }
 
-    public override void Action()
+    protected override void ExecuteInner()
     {
+        base.ExecuteInner();
+
         var hits = Attack.SingleTarget(
             attacker: Subject,
             target: _target,
-            actionType: ActionType.Ultimate,
             hitSplit: Attack.One,
             baseDamage: new BaseDamage
             {
@@ -110,7 +113,7 @@ public class StardustAceBlowoutFarewellHit : Ultimate<TrailblazerDestruction>
             }
         );
 
-        Subject.GiveTargetsHits(hits);
+        Subject.Send(hits);
     }
 }
 
@@ -125,12 +128,13 @@ public class StardustAceBlowoutRipHomeRun : Ultimate<TrailblazerDestruction>
         _target = target;
     }
 
-    public override void Action()
+    protected override void ExecuteInner()
     {
+        base.ExecuteInner();
+
         var targetsHits = Attack.Blast(
             attacker: Subject,
             target: _target,
-            actionType: ActionType.Ultimate,
             battle: Battle,
             hitSplit: Attack.One,
             baseDamage: new BaseDamage
@@ -152,13 +156,13 @@ public class StardustAceBlowoutRipHomeRun : Ultimate<TrailblazerDestruction>
         {
             DamageBooster.Modify(Subject.Boost.Physical);
             {
-                Subject.GiveTargetsHits(targetsHits);
+                Subject.Send(targetsHits);
             }
             DamageBooster.Dismiss(Subject.Boost.Physical);
         }
         else
         {
-            Subject.GiveTargetsHits(targetsHits);
+            Subject.Send(targetsHits);
         }
     }
 }
@@ -184,7 +188,7 @@ public class TrailblazerDestruction : Player
     public override int EidolonBasicAttackAdd1 => 5;
     public override int EidolonUltimateAdd2 => 5;
 
-    public void GiveTargetsHits(TargetsHits targetsHits)
+    public void Send(TargetsHits targetsHits)
     {
         var targetsHavePhysicalWeakness = false;
         AFallingStarTriggered = false;
@@ -198,24 +202,18 @@ public class TrailblazerDestruction : Player
             {
                 Add20P.Modify(CriticalRate);
                 {
-                    GiveTargetHits(target, hits);
+                    Battle.Send(hits);
                 }
                 Add20P.Dismiss(CriticalRate);
             }
             else
             {
-                GiveTargetHits(target, hits);
+                Battle.Send(hits);
             }
         }
 
         if (Eidolon2 && targetsHavePhysicalWeakness)
             Heal(0.05 * Attack.Eval);
-    }
-
-    private static void GiveTargetHits(Entity target, IEnumerable<Hit> hits)
-    {
-        foreach (var hit in hits)
-            target.TakeHit(hit);
     }
 
     public override void EntityJoined(Entity entity)

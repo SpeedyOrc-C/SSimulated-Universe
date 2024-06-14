@@ -1,5 +1,6 @@
 using SSimulated_Universe.Utility;
 using SSimulated_Universe.Utility.Modifiable.Number;
+using SSimulated_Universe.Utility.Modifiable.Set;
 
 namespace SSimulated_Universe.Universe;
 
@@ -20,6 +21,7 @@ public abstract class Player : Entity
     public abstract int EidolonTalentAdd2 { get; }
     
     public readonly int Eidolon;
+    public readonly ModifiableSet<(PlayerActionType, PlayerActionType)> ActionTypeTransformers = new();
 
     public bool Eidolon1 => Eidolon >= 1;
     public bool Eidolon2 => Eidolon >= 2;
@@ -44,12 +46,12 @@ public abstract class Player : Entity
 
     public override void TakeHit(Hit hit)
     {
-        Battle.Broadcast(o => o.BeforeTakeHit(hit.Attacker, hit, this));
+        Battle.Broadcast(o => o.BeforeTakeHit(hit, this));
 
-        LastDamageSource = new DamageFromEntity(hit.Attacker, hit.ActionType);
+        LastDamageSource = new DamageFromEntity(hit.Sender);
         TakeDamage(hit.Damage);
 
-        Battle.Broadcast(o => o.AfterTakeHit(hit.Attacker, hit, this));
+        Battle.Broadcast(o => o.AfterTakeHit(hit, this));
     }
 
     public Player(

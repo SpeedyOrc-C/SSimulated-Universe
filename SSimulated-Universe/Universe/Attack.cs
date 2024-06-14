@@ -82,11 +82,11 @@ public record BaseDamage
 }
 
 public record Hit(
-    Entity Attacker,
+    Entity Sender,
+    Entity Receiver,
     double Damage,
     DamageType DamageType,
-    double ToughnessDepletion,
-    ActionType ActionType
+    double ToughnessDepletion
 );
 
 public static class Attack
@@ -104,9 +104,9 @@ public static class Attack
     public static TargetsHits SingleTarget(
         Entity attacker,
         Entity target,
-        ActionType actionType,
         IReadOnlyList<double> hitSplit,
-        BaseDamage baseDamage)
+        BaseDamage baseDamage
+        )
     {
         // TODO: DMG Mitigation, Weaken
         
@@ -138,32 +138,30 @@ public static class Attack
         
         var splitDamages =
             normalizedHitSplit
-                .Zip(repeatedDamages)
-                .Select(p =>
-                {
-                    var (ratio, damage) = p;
+            .Zip(repeatedDamages)
+            .Select(p =>
+            {
+                var (ratio, damage) = p;
 
-                    var weaknessBreak = 
-                        baseDamage.WeaknessBreak * attacker.WeaknessBreakEfficiency.Eval;
-                    
-                    return new Hit(
-                        Attacker: attacker,
-                        Damage: ratio * damage,
-                        DamageType: baseDamage.DamageType,
-                        ToughnessDepletion: ratio * weaknessBreak, 
-                        ActionType: actionType);
-                });
+                var weaknessBreak =
+                    baseDamage.WeaknessBreak * attacker.WeaknessBreakEfficiency.Eval;
+
+                return new Hit(
+                    Sender: attacker,
+                    Receiver: target,
+                    Damage: ratio * damage,
+                    DamageType: baseDamage.DamageType,
+                    ToughnessDepletion: ratio * weaknessBreak
+                );
+            });
         
         return new Dictionary<Entity, IEnumerable<Hit>> { {target, splitDamages} };
-
-
     }
     
     public static TargetsHits Blast(
         Entity attacker,
         Entity target,
         Battle battle,
-        ActionType actionType,
         IReadOnlyList<double> hitSplit,
         BaseDamage baseDamage,
         IReadOnlyList<double> hitSplitAdjacent,
@@ -175,16 +173,16 @@ public static class Attack
         var targetRight = targetSide.FindRight(target);
         
         var hits = 
-            SingleTarget(attacker, target, actionType, hitSplit, baseDamage);
+            SingleTarget(attacker, target, hitSplit, baseDamage);
 
         var hitsLeft =
             targetLeft is not null
-                ? SingleTarget(attacker, targetLeft, actionType, hitSplitAdjacent, baseDamageAdjacent)
+                ? SingleTarget(attacker, targetLeft, hitSplitAdjacent, baseDamageAdjacent)
                 : new Dictionary<Entity, IEnumerable<Hit>>();
 
         var hitsRight =
             targetRight is not null
-                ? SingleTarget(attacker, targetRight, actionType, hitSplitAdjacent, baseDamageAdjacent)
+                ? SingleTarget(attacker, targetRight, hitSplitAdjacent, baseDamageAdjacent)
                 : new Dictionary<Entity, IEnumerable<Hit>>();
         
         return hits.Union(hitsLeft).Union(hitsRight);
@@ -194,7 +192,6 @@ public static class Attack
         Entity attacker,
         Entity targetFirst,
         Battle battle,
-        ActionType actionType,
         int bounces,
         List<double> hitSplit,
         BaseDamage baseDamage)
@@ -204,12 +201,12 @@ public static class Attack
 
         var targetSide = battle.SideOf(targetFirst);
         
-        var hitsHead = SingleTarget(attacker, targetFirst, actionType, hitSplit, baseDamage);
+        var hitsHead = SingleTarget(attacker, targetFirst, hitSplit, baseDamage);
 
         TargetsHits hitsTail = new Dictionary<Entity, IEnumerable<Hit>>();
         for (var i = 1; i <= bounces - 1; i += 1)
         {
-            var hits = SingleTarget(attacker, targetSide.ChooseRandom(), actionType, hitSplit, baseDamage);
+            var hits = SingleTarget(attacker, targetSide.ChooseRandom(), hitSplit, baseDamage);
             hitsTail = hitsTail.Union(hits);
         }
 
@@ -219,11 +216,10 @@ public static class Attack
     public static TargetsHits AoE(
         Entity attacker,
         Side targetSide,
-        ActionType actionType,
         List<double> hitSplit,
         BaseDamage baseDamage)
     =>
         targetSide.Entities
-            .Select(target => SingleTarget(attacker, target, actionType, hitSplit, baseDamage))
+            .Select(target => SingleTarget(attacker, target, hitSplit, baseDamage))
             .SelectMany(x => x);
 }

@@ -20,25 +20,12 @@ public class BattleObserver
 
     public virtual void BeforeTurnOf(Entity entity) { }
 
-    /* These events are invoked as pairs:
-     *
-     *     BeforeTakeAttack  ────┐
-     *                           │
-     *         BeforeTakeHit ──┐ │
-     *         AfterTakeHit  ──┘ │
-     *                           │
-     *         BeforeTakeHit ──┐ │
-     *         AfterTakeHit  ──┘ │
-     *                           │
-     *         BeforeTakeHit ──┐ │
-     *         AfterTakeHit  ──┘ │
-     *             ......        │
-     *     AfterTakeAttack   ────┘
-     */
-    public virtual void BeforeAction(Entity subject, ActionType actionType) { }
-    public virtual void BeforeTakeHit(Entity attacker, Hit hit, Entity target) { }
-    public virtual void AfterTakeHit(Entity attacker, Hit hit, Entity target) { }
-    public virtual void AfterAction(Entity subject, ActionType actionType) { }
+    public virtual void BeforeEvent(IEvent @event) { }
+    public virtual void BeforePlayerAction(IPlayerAction @event) { }
+    public virtual void BeforeTakeHit(Hit hit, Entity target) { }
+    public virtual void AfterTakeHit(Hit hit, Entity target) { }
+    public virtual void AfterEvent(IEvent @event) { }
+    public virtual void AfterPlayerAction(IPlayerAction @event) { }
 
     public virtual void WeaknessBroken(Entity entity) { }
     public virtual void SkillPointChanged(Side side, int delta) { }
@@ -52,40 +39,40 @@ public class BattleObserver
     public virtual void Died(Entity entity) { }
 }
 
-public class VerboseObserver : Effect
-{
-    public override void EntityJoined(Entity entity) => 
-        Console.WriteLine("EntityJoined");
-    public override void EntityLeft(Entity entity) => 
-        Console.WriteLine("EntityLeft");
-    public override void EffectStarted(Effect effectTimed) => 
-        Console.WriteLine("EffectStarted");
-    public override void EffectEnded(Effect effectTimed) => 
-        Console.WriteLine("EffectEnded");
-    public override void BeforeTurnOf(Entity entity) => 
-        Console.WriteLine("BeforeTurnOf");
-    public override void BeforeTakeHit(Entity attacker, Hit hit, Entity target) => 
-        Console.WriteLine("BeforeTakeHit");
-    public override void AfterTakeHit(Entity attacker, Hit hit, Entity target) => 
-        Console.WriteLine("AfterTakeHit");
-    public override void BeforeAction(Entity subject, ActionType actionType) => 
-        Console.WriteLine("BeforeAction " + actionType);
-    public override void AfterAction(Entity subject, ActionType actionType) => 
-        Console.WriteLine("AfterAction" + actionType);
-    public override void WeaknessBroken(Entity entity) => 
-        Console.WriteLine("WeaknessBroken");
-    public override void SkillPointChanged(Side side, int delta) => 
-        Console.WriteLine("SkillPointChanged");
-    public override void EnergyChanged(Entity entity, double delta) => 
-        Console.WriteLine("EnergyChanged");
-    public override void HpChanged(Entity entity, double delta) => 
-        Console.WriteLine("HpChanged " + delta);
-    public override void HpZeroed(Entity entity) => 
-        Console.WriteLine("HpZeroed");
-    public override void Died(Entity entity) => 
-        Console.WriteLine("Died");
-
-    public override void Added() { }
-    public override void Removed() { }
-    public VerboseObserver(Battle battle) : base(battle) { }
-}
+// public class VerboseObserver : Effect
+// {
+//     public override void EntityJoined(Entity entity) =>
+//         Console.WriteLine("EntityJoined");
+//     public override void EntityLeft(Entity entity) =>
+//         Console.WriteLine("EntityLeft");
+//     public override void EffectStarted(Effect effectTimed) =>
+//         Console.WriteLine("EffectStarted");
+//     public override void EffectEnded(Effect effectTimed) =>
+//         Console.WriteLine("EffectEnded");
+//     public override void BeforeTurnOf(Entity entity) =>
+//         Console.WriteLine("BeforeTurnOf");
+//     public override void BeforeTakeHit(Entity attacker, Hit hit, Entity target) =>
+//         Console.WriteLine("BeforeTakeHit");
+//     public override void AfterTakeHit(Entity attacker, Hit hit, Entity target) =>
+//         Console.WriteLine("AfterTakeHit");
+//     public override void BeforeAction(Entity subject, ActionType actionType) =>
+//         Console.WriteLine("BeforeAction " + actionType);
+//     public override void AfterAction(Entity subject, ActionType actionType) =>
+//         Console.WriteLine("AfterAction" + actionType);
+//     public override void WeaknessBroken(Entity entity) =>
+//         Console.WriteLine("WeaknessBroken");
+//     public override void SkillPointChanged(Side side, int delta) =>
+//         Console.WriteLine("SkillPointChanged");
+//     public override void EnergyChanged(Entity entity, double delta) =>
+//         Console.WriteLine("EnergyChanged");
+//     public override void HpChanged(Entity entity, double delta) =>
+//         Console.WriteLine("HpChanged " + delta);
+//     public override void HpZeroed(Entity entity) =>
+//         Console.WriteLine("HpZeroed");
+//     public override void Died(Entity entity) =>
+//         Console.WriteLine("Died");
+//
+//     public override void Added() { }
+//     public override void Removed() { }
+//     public VerboseObserver(Battle battle) : base(battle) { }
+// }
